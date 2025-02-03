@@ -5,9 +5,22 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import type { RentalFormData } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "@db/schema";
+
+interface RentalConfirmation extends RentalFormData {
+  id: number;
+  items: [number, number][];
+  pickupDate: string;
+  returnDate: string;
+}
 
 export default function ThankYou() {
-  const [rentalDetails, setRentalDetails] = useState<RentalFormData & { id: number }>();
+  const [rentalDetails, setRentalDetails] = useState<RentalConfirmation>();
+
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
 
   useEffect(() => {
     const details = sessionStorage.getItem('rentalConfirmation');
@@ -17,13 +30,17 @@ export default function ThankYou() {
     }
   }, []);
 
+  const getProductName = (productId: number) => {
+    return products?.find(p => p.id === productId)?.name || 'Product';
+  };
+
   return (
     <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardContent className="pt-6">
           <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">Thank You!</h1>
+          <p className="text-gray-600 text-center mb-6">
             Your rental request has been successfully submitted.
           </p>
 
@@ -35,7 +52,16 @@ export default function ThankYou() {
                 <p><span className="font-medium">Name:</span> {rentalDetails.customerName}</p>
                 <p><span className="font-medium">Email:</span> {rentalDetails.customerEmail}</p>
                 <p><span className="font-medium">Phone:</span> {rentalDetails.phoneNumber}</p>
-                <p><span className="font-medium">Items:</span> {rentalDetails.quantity}</p>
+
+                <div className="pt-2">
+                  <p className="font-medium mb-1">Items:</p>
+                  {rentalDetails.items.map(([productId, quantity]) => (
+                    <p key={productId} className="pl-2">
+                      {getProductName(productId)} x{quantity}
+                    </p>
+                  ))}
+                </div>
+
                 <p><span className="font-medium">Pickup Date:</span> {format(new Date(rentalDetails.pickupDate), 'PPP')}</p>
                 <p><span className="font-medium">Return Date:</span> {format(new Date(rentalDetails.returnDate), 'PPP')}</p>
               </div>

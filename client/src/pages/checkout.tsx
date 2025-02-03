@@ -9,20 +9,28 @@ import { useLocation } from "wouter";
 import type { RentalFormData } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "@db/schema";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   customerName: z.string().min(1, "Name is required"),
   customerEmail: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
-  quantity: z.number().min(1, "Quantity must be at least 1"),
 });
 
 export default function Checkout() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  // Retrieve rental dates from sessionStorage
+  // Retrieve rental dates and cart from sessionStorage
   const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
+  const cartItems = JSON.parse(sessionStorage.getItem('cart') || '[]');
+
+  // Fetch products to get details for cart items
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
 
   const form = useForm<RentalFormData>({
     resolver: zodResolver(formSchema),
@@ -30,18 +38,25 @@ export default function Checkout() {
       customerName: "",
       customerEmail: "",
       phoneNumber: "",
-      quantity: 1,
-      startDate: rentalDates.startDate ? new Date(rentalDates.startDate) : undefined,
-      endDate: rentalDates.endDate ? new Date(rentalDates.endDate) : undefined,
     }
   });
+
+  const cartTotal = cartItems.reduce((total: number, [, quantity]: [number, number]) => total + quantity, 0);
+
+  const getProductDetails = (productId: number) => {
+    return products?.find(p => p.id === productId);
+  };
 
   const onSubmit = async (data: RentalFormData) => {
     try {
       const response = await apiRequest("POST", "/api/rentals", {
         ...data,
         startDate: new Date(rentalDates.startDate).toISOString(),
-        endDate: new Date(rentalDates.endDate).toISOString()
+        endDate: new Date(rentalDates.endDate).toISOString(),
+        items: cartItems.map(([productId, quantity]: [number, number]) => ({
+          productId,
+          quantity
+        }))
       });
 
       const rentalDetails = await response.json();
@@ -50,12 +65,15 @@ export default function Checkout() {
       sessionStorage.setItem('rentalConfirmation', JSON.stringify({
         ...data,
         id: rentalDetails.id,
+        items: cartItems,
         pickupDate: rentalDates.startDate,
         returnDate: rentalDates.endDate
       }));
 
-      // Clear the rental dates
+      // Clear the rental dates and cart
       sessionStorage.removeItem('rentalDates');
+      sessionStorage.removeItem('cart');
+
       navigate("/thank-you");
     } catch (error) {
       toast({
@@ -69,81 +87,98 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-green-50 py-12">
       <div className="container mx-auto px-4">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle>Complete Your Rental</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <div className="max-w-2xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">Rental Period</h3>
+                  <p className="text-sm text-gray-600">
+                    From: {format(new Date(rentalDates.startDate), 'PPP')}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    To: {format(new Date(rentalDates.endDate), 'PPP')}
+                  </p>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="customerEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <h3 className="font-medium mb-2">Items ({cartTotal})</h3>
+                  <div className="space-y-2">
+                    {cartItems.map(([productId, quantity]: [number, number]) => {
+                      const product = getProductDetails(productId);
+                      return product ? (
+                        <div key={productId} className="flex justify-between text-sm">
+                          <span>{product.name}</span>
+                          <span>x{quantity}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input type="tel" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="customerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Items</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          min="1" 
-                          {...field}
-                          onChange={e => field.onChange(parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="customerEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Button type="submit" className="w-full">
-                  Submit
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input type="tel" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" className="w-full">
+                    Complete Reservation
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
