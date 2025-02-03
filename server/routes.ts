@@ -42,14 +42,12 @@ export function registerRoutes(app: Express): Server {
       const [firstProduct] = await db.query.products.findMany({ limit: 1 });
       
       // If no inventory records exist for these dates, use product's total stock
-      if (inventoryForRange.length === 0 && firstProduct) {
-        return res.json({ availableStock: firstProduct.totalStock });
+      if (inventoryForRange.length === 0) {
+        return res.json({ availableStock: firstProduct ? firstProduct.totalStock : 0 });
       }
 
-      // If we have inventory records, return the minimum available stock across the date range
-      const minStock = inventoryForRange.length > 0
-        ? Math.min(...inventoryForRange.map(inv => inv.availableStock))
-        : 0;
+      // Return the minimum available stock across the date range
+      const minStock = Math.min(...inventoryForRange.map(inv => inv.availableStock));
       
       res.json({ availableStock: minStock });
     } catch (error) {
