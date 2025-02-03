@@ -1,16 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import ProductCard from "@/components/product-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { Product } from "@db/schema";
 import CalendarPicker from "@/components/calendar-picker";
+import type { DateRange } from "react-day-picker";
 
 const categories = ["All", "Plates", "Cutlery", "Glasses", "Serving"];
 
 export default function Catalog() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>();
+  const [, navigate] = useLocation();
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -22,6 +27,17 @@ export default function Catalog() {
                          product.description.toLowerCase().includes(search.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleCheckout = () => {
+    if (dateRange?.from && dateRange?.to) {
+      // Store the selected dates in sessionStorage
+      sessionStorage.setItem('rentalDates', JSON.stringify({
+        startDate: dateRange.from,
+        endDate: dateRange.to
+      }));
+      navigate('/checkout');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-green-50">
@@ -49,16 +65,33 @@ export default function Catalog() {
           </Select>
         </div>
 
-        <CalendarPicker className="mb-8" />
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-1/3">
+            <CalendarPicker 
+              className="mb-8 sticky top-4" 
+              onDateRangeChange={setDateRange}
+            />
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!dateRange?.from || !dateRange?.to}
+              onClick={handleCheckout}
+            >
+              Proceed to Checkout
+            </Button>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ? (
-            <div>Loading...</div>
-          ) : (
-            filteredProducts?.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))
-          )}
+          <div className="lg:w-2/3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                filteredProducts?.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

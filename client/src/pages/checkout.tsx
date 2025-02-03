@@ -24,12 +24,17 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
+  // Retrieve rental dates from sessionStorage
+  const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
+
   const form = useForm<RentalFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       customerName: "",
       customerEmail: "",
       deliveryOption: "delivery",
+      startDate: rentalDates.startDate ? new Date(rentalDates.startDate) : undefined,
+      endDate: rentalDates.endDate ? new Date(rentalDates.endDate) : undefined,
     }
   });
 
@@ -40,6 +45,8 @@ export default function Checkout() {
         title: "Success!",
         description: "Your rental has been confirmed.",
       });
+      // Clear the rental dates from sessionStorage
+      sessionStorage.removeItem('rentalDates');
       navigate("/");
     } catch (error) {
       toast({

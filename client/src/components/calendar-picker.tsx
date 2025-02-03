@@ -2,19 +2,22 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { addDays } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface CalendarPickerProps {
   className?: string;
+  onDateRangeChange?: (range: DateRange | undefined) => void;
 }
 
-export default function CalendarPicker({ className }: CalendarPickerProps) {
-  const [date, setDate] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
+export default function CalendarPicker({ className, onDateRangeChange }: CalendarPickerProps) {
+  const [date, setDate] = useState<DateRange | undefined>();
+
+  const handleSelect = (range: DateRange | undefined) => {
+    setDate(range);
+    if (onDateRangeChange) {
+      onDateRangeChange(range);
+    }
+  };
 
   return (
     <Card className={className}>
@@ -23,7 +26,7 @@ export default function CalendarPicker({ className }: CalendarPickerProps) {
         <Calendar
           mode="range"
           selected={date}
-          onSelect={setDate}
+          onSelect={handleSelect}
           numberOfMonths={2}
           disabled={(date) => date < new Date() || date > addDays(new Date(), 90)}
           className="rounded-md border"
