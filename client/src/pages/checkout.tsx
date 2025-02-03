@@ -15,8 +15,6 @@ const formSchema = z.object({
   customerEmail: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
   quantity: z.number().min(1, "Quantity must be at least 1"),
-  pickupDate: z.date(),
-  returnDate: z.date(),
 });
 
 export default function Checkout() {
@@ -42,17 +40,20 @@ export default function Checkout() {
     try {
       const response = await apiRequest("POST", "/api/rentals", {
         ...data,
-        deliveryOption: 'pickup',
-        pickupDate: data.startDate,
-        returnDate: data.endDate
+        startDate: rentalDates.startDate,
+        endDate: rentalDates.endDate
       });
+
+      const rentalDetails = await response.json();
+
       // Store the rental details for the confirmation page
       sessionStorage.setItem('rentalConfirmation', JSON.stringify({
         ...data,
-        id: response.id,
-        pickupDate: data.startDate,
-        returnDate: data.endDate
+        id: rentalDetails.id,
+        pickupDate: rentalDates.startDate,
+        returnDate: rentalDates.endDate
       }));
+
       // Clear the rental dates
       sessionStorage.removeItem('rentalDates');
       navigate("/thank-you");

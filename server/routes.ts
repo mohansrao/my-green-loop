@@ -21,46 +21,47 @@ export function registerRoutes(app: Express): Server {
       const {
         customerName,
         customerEmail,
-        items,
+        phoneNumber,
+        quantity,
         startDate,
         endDate,
-        deliveryOption,
-        deliveryAddress,
-        deliveryDate,
-        pickupDate
       } = req.body;
 
-      const rental = await db.insert(rentals).values({
-        customerName,
-        customerEmail,
+      // Insert the rental record
+      const [rental] = await db.insert(rentals).values({
+        customerName: customerName,
+        customerEmail: customerEmail,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        totalAmount: 0, // Calculate based on items and duration
+        totalAmount: 0, // We'll calculate this based on duration and quantity
         status: "pending",
-        deliveryOption,
-        deliveryAddress,
-        deliveryDate: new Date(deliveryDate),
-        pickupDate: new Date(pickupDate)
+        deliveryOption: "pickup",
+        deliveryAddress: null,
+        deliveryDate: new Date(startDate),
+        pickupDate: new Date(startDate),
+        createdAt: new Date(),
       }).returning();
 
-      // Add rental items
-      for (const item of items) {
+      // For simplicity, we'll create a rental item with the first product
+      const [product] = await db.query.products.findMany({ limit: 1 });
+
+      if (product) {
         await db.insert(rentalItems).values({
-          rentalId: rental[0].id,
-          productId: item.productId,
-          quantity: item.quantity
+          rentalId: rental.id,
+          productId: product.id,
+          quantity: quantity
         });
 
         // Update product stock
         await db
           .update(products)
           .set({ 
-            totalStock: sql`${products.totalStock} - ${item.quantity}` 
+            totalStock: sql`${products.totalStock} - ${quantity}` 
           })
-          .where(eq(products.id, item.productId));
+          .where(eq(products.id, product.id));
       }
 
-      res.status(201).json(rental[0]);
+      res.status(201).json(rental);
     } catch (error) {
       console.error('Error creating rental:', error);
       res.status(500).json({ message: "Error creating rental" });

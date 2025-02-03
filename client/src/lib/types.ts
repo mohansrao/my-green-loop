@@ -5,10 +5,6 @@ export interface RentalFormData {
   quantity: number;
   startDate?: Date;
   endDate?: Date;
-  deliveryOption: 'delivery' | 'pickup';
-  deliveryAddress?: string;
-  deliveryDate: Date;
-  pickupDate: Date;
 }
 
 export const DELIVERY_OPTIONS = [
