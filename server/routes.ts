@@ -106,6 +106,10 @@ export function registerRoutes(app: Express): Server {
       const start = new Date(startDate);
       const end = new Date(endDate);
 
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+
       // Check if enough inventory is available
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
@@ -131,15 +135,15 @@ export function registerRoutes(app: Express): Server {
       const [rental] = await db.insert(rentals).values({
         customerName,
         customerEmail,
-        startDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
-        endDate: format(end, 'yyyy-MM-dd HH:mm:ssX'),
+        startDate: start,
+        endDate: end,
         totalAmount: 0,
         status: "pending",
         deliveryOption: "pickup",
         deliveryAddress: null,
-        deliveryDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
-        pickupDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
-        createdAt: format(new Date(), 'yyyy-MM-dd HH:mm:ssX'),
+        deliveryDate: start,
+        pickupDate: start,
+        createdAt: new Date(),
       }).returning();
 
       // For simplicity, we'll create a rental item with the first product
