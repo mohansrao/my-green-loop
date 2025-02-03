@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Badge } from "@/components/ui/badge";
 
 interface CalendarPickerProps {
   className?: string;
@@ -12,33 +11,53 @@ interface CalendarPickerProps {
 
 export default function CalendarPicker({ className, onDateRangeChange }: CalendarPickerProps) {
   const [date, setDate] = useState<DateRange | undefined>();
-  const [inventory, setInventory] = useState<number | null>(null);
+  const [inventoryByDate, setInventoryByDate] = useState<Record<string, number>>({});
 
-  // Check inventory when date range changes
-  useEffect(() => {
-    if (date?.from && date?.to) {
-      checkInventory(date.from, date.to);
-    }
-  }, [date?.from, date?.to]);
+  // Load inventory data for visible month
+  const loadInventoryData = async (month: Date) => {
+    const start = new Date(month.getFullYear(), month.getMonth(), 1);
+    const end = addDays(new Date(month.getFullYear(), month.getMonth() + 1, 0), 1);
 
-  const checkInventory = async (start: Date, end: Date) => {
-    try {
-      const response = await fetch(
-        `/api/inventory/available?startDate=${start.toISOString()}&endDate=${end.toISOString()}`
-      );
-      const data = await response.json();
-      setInventory(data.availableStock);
-    } catch (error) {
-      console.error('Error checking inventory:', error);
-      setInventory(null);
+    for (let current = start; current <= end; current = addDays(current, 1)) {
+      try {
+        const response = await fetch(`/api/inventory/${current.toISOString()}`);
+        const data = await response.json();
+        setInventoryByDate(prev => ({
+          ...prev,
+          [current.toISOString().split('T')[0]]: data.availableStock
+        }));
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+      }
     }
   };
+
+  const handleMonthChange = (month: Date) => {
+    loadInventoryData(month);
+  };
+
+  useEffect(() => {
+    // Load initial month's data
+    loadInventoryData(new Date());
+  }, []);
 
   const handleSelect = (range: DateRange | undefined) => {
     setDate(range);
     if (onDateRangeChange) {
       onDateRangeChange(range);
     }
+  };
+
+  const modifiers = {
+    disabled: (date: Date) => {
+      const dateStr = date.toISOString().split('T')[0];
+      const stock = inventoryByDate[dateStr];
+      return date < new Date() || date > addDays(new Date(), 90) || stock === 0;
+    }
+  };
+
+  const modifiersStyles = {
+    disabled: { color: '#ccc' }
   };
 
   return (
@@ -50,17 +69,24 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
           selected={date}
           onSelect={handleSelect}
           numberOfMonths={2}
-          disabled={(date) => date < new Date() || date > addDays(new Date(), 90)}
+          disabled={modifiers.disabled}
+          modifiersStyles={modifiersStyles}
+          onMonthChange={handleMonthChange}
           className="rounded-md border"
-          footer={
-            inventory !== null && (
-              <p className="text-sm text-center mt-4">
-                <Badge variant="outline" className="font-normal">
-                  {inventory} items available
-                </Badge>
-              </p>
-            )
-          }
+          components={{
+            DayContent: ({ date }) => {
+              const dateStr = date.toISOString().split('T')[0];
+              const stock = inventoryByDate[dateStr] ?? 100; // Default to 100 if no data
+              return (
+                <div className="flex flex-col items-center">
+                  <div>{date.getDate()}</div>
+                  <div className="text-xs mt-1 text-gray-600">
+                    {stock}
+                  </div>
+                </div>
+              );
+            },
+          }}
         />
       </div>
     </Card>

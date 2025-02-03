@@ -16,7 +16,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get available inventory for a date range
+  // Get available inventory for specific dates
   app.get("/api/inventory/available", async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -30,7 +30,11 @@ export function registerRoutes(app: Express): Server {
       // Get the inventory dates for the range
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
-          between(inventoryDates.date, start, end)
+          between(
+            inventoryDates.date, 
+            format(start, 'yyyy-MM-dd'), 
+            format(end, 'yyyy-MM-dd')
+          )
         ),
       });
 
@@ -41,7 +45,7 @@ export function registerRoutes(app: Express): Server {
           let currentDate = start;
           while (currentDate <= end) {
             await db.insert(inventoryDates).values({
-              date: currentDate,
+              date: format(currentDate, 'yyyy-MM-dd'),
               productId: firstProduct.id,
               availableStock: firstProduct.totalStock,
             });
@@ -60,6 +64,33 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get inventory for a single day
+  app.get("/api/inventory/:date", async (req, res) => {
+    try {
+      const date = format(new Date(req.params.date), 'yyyy-MM-dd');
+      const inventory = await db.query.inventoryDates.findFirst({
+        where: eq(inventoryDates.date, date),
+      });
+
+      if (!inventory) {
+        const [firstProduct] = await db.query.products.findMany({ limit: 1 });
+        if (firstProduct) {
+          await db.insert(inventoryDates).values({
+            date,
+            productId: firstProduct.id,
+            availableStock: firstProduct.totalStock,
+          });
+        }
+        return res.json({ availableStock: 100 }); // Default stock
+      }
+
+      res.json({ availableStock: inventory.availableStock });
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      res.status(500).json({ message: "Error fetching inventory" });
+    }
+  });
+
   // Create a new rental
   app.post("/api/rentals", async (req, res) => {
     try {
@@ -72,13 +103,17 @@ export function registerRoutes(app: Express): Server {
         endDate,
       } = req.body;
 
-      // Check if enough inventory is available
       const start = new Date(startDate);
       const end = new Date(endDate);
 
+      // Check if enough inventory is available
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
-          between(inventoryDates.date, start, end)
+          between(
+            inventoryDates.date, 
+            format(start, 'yyyy-MM-dd'), 
+            format(end, 'yyyy-MM-dd')
+          )
         ),
       });
 
@@ -94,17 +129,17 @@ export function registerRoutes(app: Express): Server {
 
       // Insert the rental record
       const [rental] = await db.insert(rentals).values({
-        customerName: customerName,
-        customerEmail: customerEmail,
-        startDate: start,
-        endDate: end,
-        totalAmount: 0, // We'll calculate this based on duration and quantity
+        customerName,
+        customerEmail,
+        startDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
+        endDate: format(end, 'yyyy-MM-dd HH:mm:ssX'),
+        totalAmount: 0,
         status: "pending",
         deliveryOption: "pickup",
         deliveryAddress: null,
-        deliveryDate: start,
-        pickupDate: start,
-        createdAt: new Date(),
+        deliveryDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
+        pickupDate: format(start, 'yyyy-MM-dd HH:mm:ssX'),
+        createdAt: format(new Date(), 'yyyy-MM-dd HH:mm:ssX'),
       }).returning();
 
       // For simplicity, we'll create a rental item with the first product
@@ -126,7 +161,7 @@ export function registerRoutes(app: Express): Server {
           await db
             .insert(inventoryDates)
             .values({
-              date: currentDate,
+              date: formattedDate,
               productId: product.id,
               availableStock: product.totalStock - quantity,
             })
