@@ -17,7 +17,9 @@ export const inventoryDates = pgTable("inventory_dates", {
   date: date("date").notNull(),
   productId: integer("product_id").notNull().references(() => products.id),
   availableStock: integer("available_stock").notNull(),
-});
+}, (table) => ({
+  dateProductIdx: unique().on(table.date, table.productId),
+}));
 
 export const rentals = pgTable("rentals", {
   id: serial("id").primaryKey(),
