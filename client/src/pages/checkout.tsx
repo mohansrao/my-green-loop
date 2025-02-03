@@ -53,10 +53,7 @@ export default function Checkout() {
         ...data,
         startDate: new Date(rentalDates.startDate).toISOString(),
         endDate: new Date(rentalDates.endDate).toISOString(),
-        items: cartItems.map(([productId, quantity]: [number, number]) => ({
-          productId,
-          quantity
-        }))
+        quantity: cartItems.reduce((total: number, [, quantity]: [number, number]) => total + quantity, 0)
       });
 
       const rentalDetails = await response.json();
