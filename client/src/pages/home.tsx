@@ -16,7 +16,7 @@ export default function Home() {
           </p>
           <Link href="/catalog">
             <Button className="mt-8 bg-green-700 hover:bg-green-800">
-              Browse Our Collection
+              Rent Now
             </Button>
           </Link>
         </header>

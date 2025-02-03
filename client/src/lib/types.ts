@@ -1,10 +1,8 @@
 export interface RentalFormData {
   customerName: string;
   customerEmail: string;
-  items?: Array<{
-    productId: number;
-    quantity: number;
-  }>;
+  phoneNumber: string;
+  quantity: number;
   startDate?: Date;
   endDate?: Date;
   deliveryOption: 'delivery' | 'pickup';

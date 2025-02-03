@@ -14,6 +14,8 @@ import { z } from "zod";
 const formSchema = z.object({
   customerName: z.string().min(1, "Name is required"),
   customerEmail: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Valid phone number is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
   deliveryOption: z.enum(['delivery', 'pickup']),
   deliveryAddress: z.string().optional(),
   deliveryDate: z.date(),
@@ -32,6 +34,8 @@ export default function Checkout() {
     defaultValues: {
       customerName: "",
       customerEmail: "",
+      phoneNumber: "",
+      quantity: 1,
       deliveryOption: "delivery",
       startDate: rentalDates.startDate ? new Date(rentalDates.startDate) : undefined,
       endDate: rentalDates.endDate ? new Date(rentalDates.endDate) : undefined,
@@ -41,13 +45,9 @@ export default function Checkout() {
   const onSubmit = async (data: RentalFormData) => {
     try {
       await apiRequest("POST", "/api/rentals", data);
-      toast({
-        title: "Success!",
-        description: "Your rental has been confirmed.",
-      });
       // Clear the rental dates from sessionStorage
       sessionStorage.removeItem('rentalDates');
-      navigate("/");
+      navigate("/thank-you");
     } catch (error) {
       toast({
         title: "Error",
@@ -95,6 +95,39 @@ export default function Checkout() {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of Items</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          {...field}
+                          onChange={e => field.onChange(parseInt(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <DeliveryScheduler
                   onScheduleChange={(scheduleData) => {
                     form.setValue('deliveryOption', scheduleData.deliveryOption);
@@ -102,11 +135,10 @@ export default function Checkout() {
                     form.setValue('deliveryDate', scheduleData.deliveryDate);
                     form.setValue('pickupDate', scheduleData.pickupDate);
                   }}
-                  className="mt-6"
                 />
 
                 <Button type="submit" className="w-full">
-                  Confirm Rental
+                  Submit
                 </Button>
               </form>
             </Form>
