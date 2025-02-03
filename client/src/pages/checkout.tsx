@@ -25,7 +25,7 @@ export default function Checkout() {
 
   // Retrieve rental dates and cart from sessionStorage
   const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
-  const cartItems = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const cartItems: [number, number][] = JSON.parse(sessionStorage.getItem('cart') || '[]');
 
   // Fetch products to get details for cart items
   const { data: products } = useQuery<Product[]>({
@@ -41,7 +41,7 @@ export default function Checkout() {
     }
   });
 
-  const cartTotal = cartItems.reduce((total: number, [, quantity]: [number, number]) => total + quantity, 0);
+  const cartTotal = cartItems.reduce((total, [, quantity]) => total + quantity, 0);
 
   const getProductDetails = (productId: number) => {
     return products?.find(p => p.id === productId);
@@ -49,11 +49,17 @@ export default function Checkout() {
 
   const onSubmit = async (data: RentalFormData) => {
     try {
+      // Format cart items for the API
+      const formattedItems = cartItems.map(([productId, quantity]) => ({
+        productId,
+        quantity
+      }));
+
       const response = await apiRequest("POST", "/api/rentals", {
         ...data,
         startDate: new Date(rentalDates.startDate).toISOString(),
         endDate: new Date(rentalDates.endDate).toISOString(),
-        quantity: cartItems.reduce((total: number, [, quantity]: [number, number]) => total + quantity, 0)
+        items: formattedItems
       });
 
       const rentalDetails = await response.json();
@@ -104,7 +110,7 @@ export default function Checkout() {
                 <div>
                   <h3 className="font-medium mb-2">Items ({cartTotal})</h3>
                   <div className="space-y-2">
-                    {cartItems.map(([productId, quantity]: [number, number]) => {
+                    {cartItems.map(([productId, quantity]) => {
                       const product = getProductDetails(productId);
                       return product ? (
                         <div key={productId} className="flex justify-between text-sm">
