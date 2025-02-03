@@ -148,17 +148,24 @@ export function registerRoutes(app: Express): Server {
           quantity: quantity
         });
 
+        // Create rental items and update inventory
+        const [rentalItem] = await db.insert(rentalItems).values({
+          rentalId: rental.id,
+          productId: product.id,
+          quantity: quantity
+        }).returning();
+
         // Update inventory for each date in the range
         let currentDate = start;
         while (currentDate <= end) {
           const formattedDate = format(currentDate, 'yyyy-MM-dd');
 
-          // Update or insert inventory record
+          // Update or insert inventory record only for the rented product
           await db
             .insert(inventoryDates)
             .values({
               date: formattedDate,
-              productId: product.id,
+              productId: rentalItem.productId,
               availableStock: product.totalStock - quantity,
             })
             .onConflictDoUpdate({
