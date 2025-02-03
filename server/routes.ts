@@ -1,3 +1,4 @@
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
@@ -68,7 +69,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "Error checking inventory availability" });
     }
   });
-</old_str>
 
   // Get inventory for a single day
   app.get("/api/inventory/:date", async (req, res) => {
