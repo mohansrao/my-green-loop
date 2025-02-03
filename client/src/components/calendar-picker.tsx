@@ -18,17 +18,18 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
     const start = new Date(month.getFullYear(), month.getMonth(), 1);
     const end = addDays(new Date(month.getFullYear(), month.getMonth() + 1, 0), 1);
 
-    for (let current = start; current <= end; current = addDays(current, 1)) {
-      try {
-        const response = await fetch(`/api/inventory/${current.toISOString()}`);
-        const data = await response.json();
+    try {
+      const response = await fetch(`/api/inventory/available?startDate=${start.toISOString()}&endDate=${end.toISOString()}`);
+      const data = await response.json();
+      
+      for (let current = start; current <= end; current = addDays(current, 1)) {
         setInventoryByDate(prev => ({
           ...prev,
           [current.toISOString().split('T')[0]]: data.availableStock
         }));
-      } catch (error) {
-        console.error('Error loading inventory:', error);
       }
+    } catch (error) {
+      console.error('Error loading inventory:', error);
     }
   };
 

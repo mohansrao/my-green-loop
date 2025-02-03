@@ -38,21 +38,26 @@ export function registerRoutes(app: Express): Server {
         ),
       });
 
+      const [firstProduct] = await db.query.products.findMany({ limit: 1 });
+      
       // If no inventory records exist for these dates, create them with default stock
-      if (inventoryForRange.length === 0) {
-        const [firstProduct] = await db.query.products.findMany({ limit: 1 });
-        if (firstProduct) {
-          let currentDate = start;
-          while (currentDate <= end) {
-            await db.insert(inventoryDates).values({
+      if (inventoryForRange.length === 0 && firstProduct) {
+        let currentDate = new Date(start);
+        const insertPromises = [];
+        
+        while (currentDate <= end) {
+          insertPromises.push(
+            db.insert(inventoryDates).values({
               date: format(currentDate, 'yyyy-MM-dd'),
               productId: firstProduct.id,
               availableStock: firstProduct.totalStock,
-            });
-            currentDate = addDays(currentDate, 1);
-          }
+            })
+          );
+          currentDate = addDays(currentDate, 1);
         }
-        return res.json({ availableStock: 100 }); // Default stock
+        
+        await Promise.all(insertPromises);
+        return res.json({ availableStock: firstProduct.totalStock });
       }
 
       // Return the minimum available stock across the date range
@@ -63,6 +68,7 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "Error checking inventory availability" });
     }
   });
+</old_str>
 
   // Get inventory for a single day
   app.get("/api/inventory/:date", async (req, res) => {
