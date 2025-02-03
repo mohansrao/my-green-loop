@@ -55,8 +55,8 @@ export default function Home() {
 
         <div className="text-center">
           <img
-            src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d"
-            alt="Eco-friendly party setup with sustainable dinnerware"
+            src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6"
+            alt="Eco-friendly outdoor dining event with sustainable tableware"
             className="rounded-lg mx-auto mb-8 max-w-4xl w-full object-cover h-[500px]"
           />
         </div>
