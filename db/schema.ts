@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, date } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -9,7 +9,14 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
   pricePerDay: decimal("price_per_day", { precision: 10, scale: 2 }).notNull(),
-  totalStock: integer("total_stock").notNull(),
+  totalStock: integer("total_stock").notNull().default(100),
+});
+
+export const inventoryDates = pgTable("inventory_dates", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull(),
+  productId: integer("product_id").notNull().references(() => products.id),
+  availableStock: integer("available_stock").notNull(),
 });
 
 export const rentals = pgTable("rentals", {
@@ -36,6 +43,7 @@ export const rentalItems = pgTable("rental_items", {
 
 export const productRelations = relations(products, ({ many }) => ({
   rentalItems: many(rentalItems),
+  inventoryDates: many(inventoryDates),
 }));
 
 export const rentalRelations = relations(rentals, ({ many }) => ({
@@ -53,6 +61,14 @@ export const rentalItemsRelations = relations(rentalItems, ({ one }) => ({
   }),
 }));
 
+export const inventoryDatesRelations = relations(inventoryDates, ({ one }) => ({
+  product: one(products, {
+    fields: [inventoryDates.productId],
+    references: [products.id],
+  }),
+}));
+
 export type Product = typeof products.$inferSelect;
 export type Rental = typeof rentals.$inferSelect;
 export type RentalItem = typeof rentalItems.$inferSelect;
+export type InventoryDate = typeof inventoryDates.$inferSelect;
