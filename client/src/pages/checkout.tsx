@@ -40,8 +40,8 @@ export default function Checkout() {
     try {
       const response = await apiRequest("POST", "/api/rentals", {
         ...data,
-        startDate: rentalDates.startDate,
-        endDate: rentalDates.endDate
+        startDate: new Date(rentalDates.startDate).toISOString(),
+        endDate: new Date(rentalDates.endDate).toISOString()
       });
 
       const rentalDetails = await response.json();
