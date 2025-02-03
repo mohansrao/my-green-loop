@@ -41,28 +41,16 @@ export function registerRoutes(app: Express): Server {
 
       const [firstProduct] = await db.query.products.findMany({ limit: 1 });
       
-      // If no inventory records exist for these dates, create them with default stock
+      // If no inventory records exist for these dates, use product's total stock
       if (inventoryForRange.length === 0 && firstProduct) {
-        let currentDate = new Date(start);
-        const insertPromises = [];
-        
-        while (currentDate <= end) {
-          insertPromises.push(
-            db.insert(inventoryDates).values({
-              date: format(currentDate, 'yyyy-MM-dd'),
-              productId: firstProduct.id,
-              availableStock: firstProduct.totalStock,
-            })
-          );
-          currentDate = addDays(currentDate, 1);
-        }
-        
-        await Promise.all(insertPromises);
         return res.json({ availableStock: firstProduct.totalStock });
       }
 
-      // Return the minimum available stock across the date range
-      const minStock = Math.min(...inventoryForRange.map(inv => inv.availableStock));
+      // If we have inventory records, return the minimum available stock across the date range
+      const minStock = inventoryForRange.length > 0
+        ? Math.min(...inventoryForRange.map(inv => inv.availableStock))
+        : 0;
+      
       res.json({ availableStock: minStock });
     } catch (error) {
       console.error('Error checking inventory:', error);
