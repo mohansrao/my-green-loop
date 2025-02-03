@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import type { RentalFormData } from "@/lib/types";
-import DeliveryScheduler from "@/components/delivery-scheduler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -16,10 +15,8 @@ const formSchema = z.object({
   customerEmail: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
   quantity: z.number().min(1, "Quantity must be at least 1"),
-  deliveryOption: z.enum(['delivery', 'pickup']),
-  deliveryAddress: z.string().optional(),
-  deliveryDate: z.date(),
   pickupDate: z.date(),
+  returnDate: z.date(),
 });
 
 export default function Checkout() {
@@ -36,7 +33,6 @@ export default function Checkout() {
       customerEmail: "",
       phoneNumber: "",
       quantity: 1,
-      deliveryOption: "delivery",
       startDate: rentalDates.startDate ? new Date(rentalDates.startDate) : undefined,
       endDate: rentalDates.endDate ? new Date(rentalDates.endDate) : undefined,
     }
@@ -44,8 +40,20 @@ export default function Checkout() {
 
   const onSubmit = async (data: RentalFormData) => {
     try {
-      await apiRequest("POST", "/api/rentals", data);
-      // Clear the rental dates from sessionStorage
+      const response = await apiRequest("POST", "/api/rentals", {
+        ...data,
+        deliveryOption: 'pickup',
+        pickupDate: data.startDate,
+        returnDate: data.endDate
+      });
+      // Store the rental details for the confirmation page
+      sessionStorage.setItem('rentalConfirmation', JSON.stringify({
+        ...data,
+        id: response.id,
+        pickupDate: data.startDate,
+        returnDate: data.endDate
+      }));
+      // Clear the rental dates
       sessionStorage.removeItem('rentalDates');
       navigate("/thank-you");
     } catch (error) {
@@ -126,15 +134,6 @@ export default function Checkout() {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
-
-                <DeliveryScheduler
-                  onScheduleChange={(scheduleData) => {
-                    form.setValue('deliveryOption', scheduleData.deliveryOption);
-                    form.setValue('deliveryAddress', scheduleData.deliveryAddress);
-                    form.setValue('deliveryDate', scheduleData.deliveryDate);
-                    form.setValue('pickupDate', scheduleData.pickupDate);
-                  }}
                 />
 
                 <Button type="submit" className="w-full">

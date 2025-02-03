@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import ProductCard from "@/components/product-card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import type { Product } from "@db/schema";
 import CalendarPicker from "@/components/calendar-picker";
 import type { DateRange } from "react-day-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Catalog() {
   const [showCalendar, setShowCalendar] = useState(true);
@@ -18,13 +17,11 @@ export default function Catalog() {
     queryKey: ["/api/products"],
   });
 
-  const handleDateSelect = (range: DateRange | undefined) => {
-    setDateRange(range);
-    if (range?.from && range?.to) {
-      // Store the selected dates in sessionStorage
+  const handleNext = () => {
+    if (dateRange?.from && dateRange?.to) {
       sessionStorage.setItem('rentalDates', JSON.stringify({
-        startDate: range.from,
-        endDate: range.to
+        startDate: dateRange.from,
+        endDate: dateRange.to
       }));
       navigate('/checkout');
     }
@@ -35,10 +32,20 @@ export default function Catalog() {
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
         <DialogContent className="sm:max-w-xl">
           <div className="py-6">
-            <h2 className="text-lg font-semibold mb-4">Select Your Rental Dates</h2>
+            <h2 className="text-2xl font-semibold mb-2 text-green-800">Select Your Rental Period</h2>
+            <p className="text-gray-600 mb-6">
+              Choose your preferred pickup and return dates. Our eco-friendly dining items are available for rental periods between 1 and 30 days.
+            </p>
             <CalendarPicker 
-              onDateRangeChange={handleDateSelect}
+              onDateRangeChange={setDateRange}
             />
+            <Button
+              className="w-full mt-6"
+              disabled={!dateRange?.from || !dateRange?.to}
+              onClick={handleNext}
+            >
+              Next
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
