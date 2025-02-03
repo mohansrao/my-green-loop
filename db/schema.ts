@@ -20,6 +20,10 @@ export const rentals = pgTable("rentals", {
   endDate: timestamp("end_date").notNull(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").notNull().default("pending"),
+  deliveryOption: text("delivery_option").notNull(),
+  deliveryAddress: text("delivery_address"),
+  deliveryDate: timestamp("delivery_date").notNull(),
+  pickupDate: timestamp("pickup_date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

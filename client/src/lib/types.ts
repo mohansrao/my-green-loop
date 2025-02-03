@@ -7,4 +7,13 @@ export interface RentalFormData {
   }>;
   startDate?: Date;
   endDate?: Date;
+  deliveryOption: 'delivery' | 'pickup';
+  deliveryAddress?: string;
+  deliveryDate: Date;
+  pickupDate: Date;
 }
+
+export const DELIVERY_OPTIONS = [
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'pickup', label: 'Pickup' }
+] as const;
