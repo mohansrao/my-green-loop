@@ -1,9 +1,8 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
-import { eq, and, between, sql } from "drizzle-orm";
+import { eq, and, between, sql, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 
 export function registerRoutes(app: Express): Server {
@@ -83,26 +82,25 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Create a new rental
   app.post("/api/rentals", async (req, res) => {
     try {
       const {
         customerName,
         customerEmail,
         phoneNumber,
-        quantity,
+        items,
         startDate,
         endDate,
       } = req.body;
-
+  
       const start = new Date(startDate);
       const end = new Date(endDate);
-
+  
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         return res.status(400).json({ message: "Invalid date format" });
       }
-
-      // Check if enough inventory is available
+  
+      // Check if enough inventory is available for each product
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
           between(
@@ -112,24 +110,43 @@ export function registerRoutes(app: Express): Server {
           )
         ),
       });
-
-      const minStock = inventoryForRange.length > 0
-        ? Math.min(...inventoryForRange.map(inv => inv.availableStock))
-        : 100;
-
-      if (minStock < quantity) {
-        return res.status(400).json({ 
-          message: "Not enough inventory available for the selected dates" 
-        });
+  
+      // Verify inventory availability for each product
+      for (const item of items) {
+        const minStock = inventoryForRange.length > 0
+          ? Math.min(...inventoryForRange
+              .filter(inv => inv.productId === item.productId)
+              .map(inv => inv.availableStock))
+          : 100;
+  
+        if (minStock < item.quantity) {
+          return res.status(400).json({ 
+            message: `Not enough inventory available for product ID ${item.productId}` 
+          });
+        }
       }
-
+  
+      // Calculate total amount
+      const productsData = await db.query.products.findMany({
+        where: inArray(
+          products.id, 
+          items.map(item => item.productId)
+        )
+      });
+  
+      const daysRented = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const totalAmount = productsData.reduce((total, product) => {
+        const item = items.find(i => i.productId === product.id);
+        return total + (Number(product.pricePerDay) * daysRented * (item?.quantity || 0));
+      }, 0);
+  
       // Insert the rental record
       const [rental] = await db.insert(rentals).values({
         customerName,
         customerEmail,
         startDate: start,
         endDate: end,
-        totalAmount: 0,
+        totalAmount,
         status: "pending",
         deliveryOption: "pickup",
         deliveryAddress: null,
@@ -137,48 +154,39 @@ export function registerRoutes(app: Express): Server {
         pickupDate: start,
         createdAt: new Date(),
       }).returning();
-
-      // For simplicity, we'll create a rental item with the first product
-      const [product] = await db.query.products.findMany({ limit: 1 });
-
-      if (product) {
-        await db.insert(rentalItems).values({
-          rentalId: rental.id,
-          productId: product.id,
-          quantity: quantity
-        });
-
-        // Create rental items and update inventory
+  
+      // Create rental items and update inventory
+      for (const item of items) {
         const [rentalItem] = await db.insert(rentalItems).values({
           rentalId: rental.id,
-          productId: product.id,
-          quantity: quantity
+          productId: item.productId,
+          quantity: item.quantity
         }).returning();
-
+  
         // Update inventory for each date in the range
         let currentDate = start;
         while (currentDate <= end) {
           const formattedDate = format(currentDate, 'yyyy-MM-dd');
-
-          // Update or insert inventory record only for the rented product
+  
+          // Update or insert inventory record for this specific product
           await db
             .insert(inventoryDates)
             .values({
               date: formattedDate,
-              productId: rentalItem.productId,
-              availableStock: product.totalStock - quantity,
+              productId: item.productId,
+              availableStock: 100 - item.quantity,
             })
             .onConflictDoUpdate({
               target: [inventoryDates.date, inventoryDates.productId],
               set: {
-                availableStock: sql`${inventoryDates.availableStock} - ${quantity}`,
+                availableStock: sql`${inventoryDates.availableStock} - ${item.quantity}`,
               },
             });
-
+  
           currentDate = addDays(currentDate, 1);
         }
       }
-
+  
       res.status(201).json(rental);
     } catch (error) {
       console.error('Error creating rental:', error);
