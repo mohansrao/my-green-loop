@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { Rental } from "@db/schema";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
