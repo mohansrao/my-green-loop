@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@tremor/react";
+} from "@/components/ui/card";
 import { format } from "date-fns";
 
 
