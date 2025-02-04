@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/products"],
   });
 
-  const { data: inventory, isLoading: inventoryLoading } = useQuery({
+  const { data: inventory, isLoading: inventoryLoading } = useQuery<Record<string, Record<number, number>>>({
     queryKey: ["/api/inventory"],
   });
 
@@ -57,8 +57,9 @@ export default function AdminDashboard() {
   };
 
   const getDayInventory = (date: Date) => {
-    if (!inventory?.stockByProduct) return {};
-    return inventory.stockByProduct[format(date, 'yyyy-MM-dd')] || {};
+    if (!inventory) return {};
+    const dateKey = format(date, 'yyyy-MM-dd');
+    return inventory[dateKey] || {};
   };
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
