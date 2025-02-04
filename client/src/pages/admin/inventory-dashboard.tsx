@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import type { Rental } from "@db/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -7,8 +8,15 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { format } from "date-fns";
-
 
 interface InventoryData {
   stockByProduct: Record<string, number>;
@@ -45,65 +53,64 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-4">
-      <div className="flex flex-col md:flex-row gap-6">
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Customer Bookings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div>Loading bookings...</div>
-            ) : (
-              <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Customer Bookings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div>Loading bookings...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Dates</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Items</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {rentals?.map((rental) => (
-                  <Card key={rental.id} className="p-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <div className="font-semibold">Customer</div>
-                        <div>{rental.customerName}</div>
-                        <div className="text-sm text-gray-500">{rental.customerEmail}</div>
+                  <TableRow key={rental.id}>
+                    <TableCell>
+                      <div>{rental.customerName}</div>
+                      <div className="text-sm text-gray-500">{rental.customerEmail}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {format(new Date(rental.startDate), 'MMM d, yyyy')} -
+                        {format(new Date(rental.endDate), 'MMM d, yyyy')}
                       </div>
-                      <div>
-                        <div className="font-semibold">Dates</div>
-                        <div className="text-sm">
-                          {format(new Date(rental.startDate), 'MMM d, yyyy')} -
-                          <br />
-                          {format(new Date(rental.endDate), 'MMM d, yyyy')}
-                        </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className={`
+                        inline-block px-2 py-1 rounded-full text-xs
+                        ${rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                          rental.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                          'bg-blue-100 text-blue-800'}
+                      `}>
+                        {rental.status}
                       </div>
-                      <div>
-                        <div className="font-semibold">Status</div>
-                        <div className={`
-                          inline-block px-2 py-1 rounded-full text-xs
-                          ${rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                            rental.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                            'bg-blue-100 text-blue-800'}
-                        `}>
-                          {rental.status}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">Amount</div>
-                        <div>${rental.totalAmount}</div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-sm text-gray-600">
-                      <div className="font-semibold mb-1">Rented Items:</div>
+                    </TableCell>
+                    <TableCell>${rental.totalAmount}</TableCell>
+                    <TableCell>
                       {getRentalItems(rental.id).map(({product, quantity}) => (
                         product && (
-                          <div key={product.id} className="pl-2">
+                          <div key={product.id} className="text-sm">
                             {product.name} × {quantity}
                           </div>
                         )
                       ))}
-                    </div>
-                  </Card>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
