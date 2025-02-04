@@ -27,6 +27,14 @@ export function registerRoutes(app: Express): Server {
       const start = new Date(startDate as string);
       const end = new Date(endDate as string);
 
+      const allProducts = await db.query.products.findMany();
+      const productStocks = new Map();
+
+      // Initialize with total stock for each product
+      allProducts.forEach(product => {
+        productStocks.set(product.id, product.totalStock);
+      });
+
       // Get the inventory dates for the range
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
@@ -38,17 +46,16 @@ export function registerRoutes(app: Express): Server {
         ),
       });
 
-      const [firstProduct] = await db.query.products.findMany({ limit: 1 });
-      
-      // If no inventory records exist for these dates, use product's total stock
-      if (inventoryForRange.length === 0) {
-        return res.json({ availableStock: firstProduct ? firstProduct.totalStock : 0 });
-      }
+      // Calculate minimum stock per product
+      inventoryForRange.forEach(inv => {
+        const currentMin = productStocks.get(inv.productId);
+        if (currentMin > inv.availableStock) {
+          productStocks.set(inv.productId, inv.availableStock);
+        }
+      });
 
-      // Return the minimum available stock across the date range
-      const minStock = Math.min(...inventoryForRange.map(inv => inv.availableStock));
-      
-      res.json({ availableStock: minStock });
+      const stockByProduct = Object.fromEntries(productStocks);
+      res.json({ stockByProduct });
     } catch (error) {
       console.error('Error checking inventory:', error);
       res.status(500).json({ message: "Error checking inventory availability" });
