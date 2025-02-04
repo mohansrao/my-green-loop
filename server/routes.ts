@@ -9,6 +9,9 @@ export function registerRoutes(app: Express): Server {
   // Get all products
   app.get("/api/products", async (_req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const allProducts = await db.query.products.findMany();
       res.json(allProducts);
     } catch (error) {
@@ -19,6 +22,9 @@ export function registerRoutes(app: Express): Server {
   // Get available inventory for specific dates
   app.get("/api/inventory/available", async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
         return res.status(400).json({ message: "Start and end dates are required" });
@@ -65,6 +71,9 @@ export function registerRoutes(app: Express): Server {
   // Get inventory for date range
   app.get("/api/inventory/daily", async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
         return res.status(400).json({ message: "Start and end dates are required" });
@@ -115,6 +124,9 @@ export function registerRoutes(app: Express): Server {
   // Get all rentals
   app.get("/api/rental-items", async (_req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const items = await db.query.rentalItems.findMany();
       res.json(items);
     } catch (error) {
@@ -125,6 +137,9 @@ export function registerRoutes(app: Express): Server {
 
   app.get("/api/rentals", async (_req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const allRentals = await db.query.rentals.findMany({
         orderBy: (rentals, { desc }) => [desc(rentals.createdAt)],
       });
