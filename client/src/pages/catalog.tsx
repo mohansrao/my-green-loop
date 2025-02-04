@@ -40,7 +40,7 @@ export default function Catalog() {
         // Map products with their availability
         const availability = products.map(product => ({
           ...product,
-          availableStock: data.availableStock
+          availableStock: data.stockByProduct[product.id] || 0
         }));
 
         setProductAvailability(availability);
