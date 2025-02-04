@@ -95,7 +95,7 @@ export function registerRoutes(app: Express): Server {
 
       // Transform into required format
       const dailyInventory: Record<string, Record<number, number>> = {};
-      
+
       // If no inventory records exist, use totalStock from products
       if (inventoryForRange.length === 0) {
         const dateKey = format(start, 'yyyy-MM-dd');
@@ -113,6 +113,7 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
+      console.log('[/api/inventory/daily] Response:', { dailyInventory });
       res.json({ dailyInventory });
     } catch (error) {
       console.error('Error fetching daily inventory:', error);
@@ -186,14 +187,14 @@ export function registerRoutes(app: Express): Server {
         startDate,
         endDate,
       } = req.body;
-  
+
       const start = new Date(startDate);
       const end = new Date(endDate);
-  
+
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         return res.status(400).json({ message: "Invalid date format" });
       }
-  
+
       // Check if enough inventory is available for each product
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
@@ -204,7 +205,7 @@ export function registerRoutes(app: Express): Server {
           )
         ),
       });
-  
+
       // Verify inventory availability for each product
       for (const item of items) {
         const minStock = inventoryForRange.length > 0
@@ -212,14 +213,14 @@ export function registerRoutes(app: Express): Server {
               .filter(inv => inv.productId === item.productId)
               .map(inv => inv.availableStock))
           : 100;
-  
+
         if (minStock < item.quantity) {
           return res.status(400).json({ 
             message: `Not enough inventory available for product ID ${item.productId}` 
           });
         }
       }
-  
+
       // Calculate total amount
       const productsData = await db.query.products.findMany({
         where: inArray(
@@ -227,13 +228,13 @@ export function registerRoutes(app: Express): Server {
           items.map(item => item.productId)
         )
       });
-  
+
       const daysRented = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
       const totalAmount = productsData.reduce((total, product) => {
         const item = items.find(i => i.productId === product.id);
         return total + (Number(product.pricePerDay) * daysRented * (item?.quantity || 0));
       }, 0);
-  
+
       // Insert the rental record
       const [rental] = await db.insert(rentals).values({
         customerName,
@@ -248,7 +249,7 @@ export function registerRoutes(app: Express): Server {
         pickupDate: start,
         createdAt: new Date(),
       }).returning();
-  
+
       // Create rental items and update inventory
       for (const item of items) {
         const [rentalItem] = await db.insert(rentalItems).values({
@@ -256,12 +257,12 @@ export function registerRoutes(app: Express): Server {
           productId: item.productId,
           quantity: item.quantity
         }).returning();
-  
+
         // Update inventory for each date in the range
         let currentDate = start;
         while (currentDate <= end) {
           const formattedDate = format(currentDate, 'yyyy-MM-dd');
-  
+
           // Update or insert inventory record for this specific product
           await db
             .insert(inventoryDates)
@@ -276,11 +277,11 @@ export function registerRoutes(app: Express): Server {
                 availableStock: sql`${inventoryDates.availableStock} - ${item.quantity}`,
               },
             });
-  
+
           currentDate = addDays(currentDate, 1);
         }
       }
-  
+
       res.status(201).json(rental);
     } catch (error) {
       console.error('Error creating rental:', error);
