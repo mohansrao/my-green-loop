@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Catalog from "@/pages/catalog";
 import Checkout from "@/pages/checkout";
 import ThankYou from "@/pages/thank-you";
+import InventoryDashboard from "@/pages/admin/inventory-dashboard";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/catalog" component={Catalog} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />
+      <Route path="/admin/inventory" component={InventoryDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
