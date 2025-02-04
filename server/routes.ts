@@ -73,6 +73,7 @@ export function registerRoutes(app: Express): Server {
       const start = new Date(startDate as string);
       const end = new Date(endDate as string);
 
+      const allProducts = await db.query.products.findMany();
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
           between(
@@ -85,13 +86,23 @@ export function registerRoutes(app: Express): Server {
 
       // Transform into required format
       const dailyInventory: Record<string, Record<number, number>> = {};
-      inventoryForRange.forEach(inv => {
-        const dateKey = format(new Date(inv.date), 'yyyy-MM-dd');
-        if (!dailyInventory[dateKey]) {
-          dailyInventory[dateKey] = {};
-        }
-        dailyInventory[dateKey][inv.productId] = inv.availableStock;
-      });
+      
+      // If no inventory records exist, use totalStock from products
+      if (inventoryForRange.length === 0) {
+        const dateKey = format(start, 'yyyy-MM-dd');
+        dailyInventory[dateKey] = {};
+        allProducts.forEach(product => {
+          dailyInventory[dateKey][product.id] = product.totalStock;
+        });
+      } else {
+        inventoryForRange.forEach(inv => {
+          const dateKey = format(new Date(inv.date), 'yyyy-MM-dd');
+          if (!dailyInventory[dateKey]) {
+            dailyInventory[dateKey] = {};
+          }
+          dailyInventory[dateKey][inv.productId] = inv.availableStock;
+        });
+      }
 
       res.json({ dailyInventory });
     } catch (error) {
