@@ -63,6 +63,19 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Get inventory for a single day
+  // Get all rentals
+  app.get("/api/rentals", async (_req, res) => {
+    try {
+      const allRentals = await db.query.rentals.findMany({
+        orderBy: (rentals, { desc }) => [desc(rentals.createdAt)],
+      });
+      res.json(allRentals);
+    } catch (error) {
+      console.error('Error fetching rentals:', error);
+      res.status(500).json({ message: "Error fetching rentals" });
+    }
+  });
+
   app.get("/api/inventory/:date", async (req, res) => {
     try {
       const date = format(new Date(req.params.date), 'yyyy-MM-dd');

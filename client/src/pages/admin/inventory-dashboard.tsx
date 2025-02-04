@@ -1,99 +1,75 @@
-
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { Product } from "@db/schema";
-import { startOfDay, endOfDay, format, addDays, eachDayOfInterval } from "date-fns";
 import { useState } from "react";
+import type { Rental } from "@db/schema";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@tremor/react";
+import { format } from "date-fns";
+
 
 interface InventoryData {
   stockByProduct: Record<string, number>;
 }
 
-export default function InventoryDashboard() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
-  // Fetch products
-  const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+export default function AdminDashboard() {
+  // ... other existing code ...
+
+  // Fetch rentals
+  const { data: rentals, isLoading: rentalsLoading } = useQuery<Rental[]>({
+    queryKey: ["/api/rentals"],
   });
 
-  const handlePreviousMonth = () => {
-    setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-
-  // Calculate date range for current month
-  const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-  const endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
-
-  // Fetch inventory levels for each day
-  const fetchDailyInventory = async (date: Date) => {
-    const response = await fetch(`/api/inventory/${format(date, 'yyyy-MM-dd')}`);
-    return response.json();
-  };
-
-  // Fetch inventory for all days in parallel
-  const { data: inventoryDataByDate, isLoading: inventoryLoading } = useQuery({
-    queryKey: ["/api/inventory/daily", startDate, endDate],
-    queryFn: async () => {
-      const inventoryPromises = days.map(day => fetchDailyInventory(day));
-      const inventoryResults = await Promise.all(inventoryPromises);
-      return days.reduce((acc, day, index) => {
-        acc[format(day, 'yyyy-MM-dd')] = inventoryResults[index];
-        return acc;
-      }, {} as Record<string, any>);
-    }
-  });
-
-  const isLoading = productsLoading || inventoryLoading;
-
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
+  const isLoading = productsLoading || inventoryLoading || rentalsLoading;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Inventory Calendar</h1>
+    <div className="p-4">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* ... other existing code ... */}
+        </Card>
 
-      <div className="grid gap-6">
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Product Availability</CardTitle>
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" onClick={handlePreviousMonth}>&lt; Previous</Button>
-                <span className="font-semibold">{format(selectedDate, 'MMMM yyyy')}</span>
-                <Button variant="outline" size="sm" onClick={handleNextMonth}>Next &gt;</Button>
-              </div>
-            </div>
+            <CardTitle>Customer Bookings</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div>Loading inventory data...</div>
+              <div>Loading bookings...</div>
             ) : (
-              <div className="grid grid-cols-7 gap-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="text-center font-bold p-2">{day}</div>
-                ))}
-                {days.map((day, index) => (
-                  <Card key={index} className="p-2 min-h-[120px] text-sm">
-                    <div className="font-semibold mb-1">{format(day, 'MMM d')}</div>
-                    <div className="space-y-1">
-                      {products?.map(product => (
-                        <div key={product.id} className="flex justify-between">
-                          <span className="truncate">{product.name}:</span>
-                          <span className={`font-medium ${
-                            (inventoryDataByDate?.[format(day, 'yyyy-MM-dd')]?.availableStock || 0) === 0 
-                              ? 'text-red-500' 
-                              : 'text-green-500'
-                          }`}>
-                            {inventoryDataByDate?.[format(day, 'yyyy-MM-dd')]?.availableStock || 0}
-                          </span>
+              <div className="space-y-4">
+                {rentals?.map((rental) => (
+                  <Card key={rental.id} className="p-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <div className="font-semibold">Customer</div>
+                        <div>{rental.customerName}</div>
+                        <div className="text-sm text-gray-500">{rental.customerEmail}</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold">Dates</div>
+                        <div className="text-sm">
+                          {format(new Date(rental.startDate), 'MMM d, yyyy')} -
+                          <br />
+                          {format(new Date(rental.endDate), 'MMM d, yyyy')}
                         </div>
-                      ))}
+                      </div>
+                      <div>
+                        <div className="font-semibold">Status</div>
+                        <div className={`
+                          inline-block px-2 py-1 rounded-full text-xs
+                          ${rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            rental.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            'bg-blue-100 text-blue-800'}
+                        `}>
+                          {rental.status}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold">Amount</div>
+                        <div>${rental.totalAmount}</div>
+                      </div>
                     </div>
                   </Card>
                 ))}
