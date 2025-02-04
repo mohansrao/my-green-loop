@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { Rental } from "@db/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 
 interface InventoryData {
   stockByProduct: Record<string, number>;
@@ -27,21 +26,20 @@ interface InventoryData {
 export default function AdminDashboard() {
   const [sortField, setSortField] = useState<'date' | 'name'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  const { data: inventory, isLoading: inventoryLoading } = useQuery<Record<string, Record<number, number>>>({
+  const { data: inventory, isLoading: inventoryLoading } = useQuery<{stockByProduct: Record<number, number>}>({
     queryKey: ["/api/inventory", currentMonth],
     queryFn: async () => {
       const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
       const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
       const response = await fetch(`/api/inventory/available?startDate=${startDate}&endDate=${endDate}`);
-      const data = await response.json();
-      return data.stockByProduct || {};
+      return response.json();
     }
   });
 
@@ -54,7 +52,7 @@ export default function AdminDashboard() {
   });
 
   const isLoading = productsLoading || inventoryLoading || rentalsLoading;
-  
+
   const getRentalItems = (rentalId: number) => {
     if (!rentalItems || !products) return [];
     return rentalItems
@@ -67,14 +65,14 @@ export default function AdminDashboard() {
 
   const getDayInventory = (date: Date) => {
     if (!inventory) return {};
-    return inventory.stockByProduct || {};
+    return inventory.stockByProduct;
   };
 
   const generateCalendarDays = () => {
     const days = [];
     const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
     const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-    
+
     for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
       days.push(new Date(d));
     }
@@ -96,7 +94,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="rentals">Customer Rentals</TabsTrigger>
           <TabsTrigger value="inventory">Inventory Calendar</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="rentals">
           <Card>
             <CardHeader>
