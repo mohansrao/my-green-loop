@@ -1,84 +1,76 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
 import { Product } from "@db/schema";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, format, addDays, eachDayOfInterval } from "date-fns";
+import { useState } from "react";
 
 interface InventoryData {
   stockByProduct: Record<string, number>;
 }
 
 export default function InventoryDashboard() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  
   // Fetch products
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  // Fetch current inventory levels
-  const today = new Date();
+  // Calculate date range for current month
+  const startDate = startOfDay(selectedDate);
+  const endDate = endOfDay(addDays(startDate, 30));
+
+  // Fetch inventory levels
   const { data: inventoryData, isLoading: inventoryLoading } = useQuery<InventoryData>({
     queryKey: ["/api/inventory/available", {
-      startDate: startOfDay(today).toISOString(),
-      endDate: endOfDay(today).toISOString(),
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
     }],
   });
 
   const isLoading = productsLoading || inventoryLoading;
 
+  const days = eachDayOfInterval({ start: startDate, end: endDate });
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Inventory Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Inventory Calendar</h1>
 
-      <div className="grid gap-6 mb-8">
+      <div className="grid gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Current Inventory Levels</CardTitle>
+            <CardTitle>Product Availability</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div>Loading inventory data...</div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Total Stock</TableHead>
-                    <TableHead>Available Stock</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products?.map((product) => {
-                    const availableStock = inventoryData?.stockByProduct[product.id];
-                    const stockStatus = 
-                      !availableStock ? "No Records" :
-                      availableStock === 0 ? "Out of Stock" :
-                      availableStock < 20 ? "Low Stock" :
-                      "In Stock";
-
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell>{product.name}</TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>{product.totalStock}</TableCell>
-                        <TableCell>{availableStock}</TableCell>
-                        <TableCell>
-                          <span 
-                            className={`px-2 py-1 rounded text-sm ${
-                              stockStatus === "Out of Stock" ? "bg-red-100 text-red-800" :
-                              stockStatus === "Low Stock" ? "bg-yellow-100 text-yellow-800" :
-                              "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {stockStatus}
+              <div className="grid grid-cols-7 gap-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="text-center font-bold p-2">{day}</div>
+                ))}
+                {days.map((day, index) => (
+                  <Card key={index} className="p-2 min-h-[120px] text-sm">
+                    <div className="font-semibold mb-1">{format(day, 'd')}</div>
+                    <div className="space-y-1">
+                      {products?.map(product => (
+                        <div key={product.id} className="flex justify-between">
+                          <span className="truncate">{product.name}:</span>
+                          <span className={`font-medium ${
+                            (inventoryData?.stockByProduct[product.id] || 0) === 0 
+                              ? 'text-red-500' 
+                              : 'text-green-500'
+                          }`}>
+                            {inventoryData?.stockByProduct[product.id] || 0}
                           </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
