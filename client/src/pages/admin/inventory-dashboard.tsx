@@ -33,12 +33,12 @@ export default function AdminDashboard() {
     queryKey: ["/api/products"],
   });
 
-  const { data: inventory, isLoading: inventoryLoading } = useQuery<{stockByProduct: Record<number, number>}>({
-    queryKey: ["/api/inventory", currentMonth],
+  const { data: inventory, isLoading: inventoryLoading } = useQuery<{dailyInventory: Record<string, Record<number, number>>}>({
+    queryKey: ["/api/inventory/daily", currentMonth],
     queryFn: async () => {
       const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
       const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
-      const response = await fetch(`/api/inventory/available?startDate=${startDate}&endDate=${endDate}`);
+      const response = await fetch(`/api/inventory/daily?startDate=${startDate}&endDate=${endDate}`);
       return response.json();
     }
   });
