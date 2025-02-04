@@ -31,12 +31,23 @@ export default function InventoryDashboard() {
   const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   const endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
 
-  // Fetch inventory levels
-  const { data: inventoryData, isLoading: inventoryLoading } = useQuery<InventoryData>({
-    queryKey: ["/api/inventory/available", {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    }],
+  // Fetch inventory levels for each day
+  const fetchDailyInventory = async (date: Date) => {
+    const response = await fetch(`/api/inventory/${format(date, 'yyyy-MM-dd')}`);
+    return response.json();
+  };
+
+  // Fetch inventory for all days in parallel
+  const { data: inventoryDataByDate, isLoading: inventoryLoading } = useQuery({
+    queryKey: ["/api/inventory/daily", startDate, endDate],
+    queryFn: async () => {
+      const inventoryPromises = days.map(day => fetchDailyInventory(day));
+      const inventoryResults = await Promise.all(inventoryPromises);
+      return days.reduce((acc, day, index) => {
+        acc[format(day, 'yyyy-MM-dd')] = inventoryResults[index];
+        return acc;
+      }, {} as Record<string, any>);
+    }
   });
 
   const isLoading = productsLoading || inventoryLoading;
@@ -75,11 +86,11 @@ export default function InventoryDashboard() {
                         <div key={product.id} className="flex justify-between">
                           <span className="truncate">{product.name}:</span>
                           <span className={`font-medium ${
-                            (inventoryData?.stockByProduct[product.id] || 0) === 0 
+                            (inventoryDataByDate?.[format(day, 'yyyy-MM-dd')]?.availableStock || 0) === 0 
                               ? 'text-red-500' 
                               : 'text-green-500'
                           }`}>
-                            {inventoryData?.stockByProduct[product.id] || 0}
+                            {inventoryDataByDate?.[format(day, 'yyyy-MM-dd')]?.availableStock || 0}
                           </span>
                         </div>
                       ))}
