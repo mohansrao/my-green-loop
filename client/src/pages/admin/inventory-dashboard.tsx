@@ -67,8 +67,7 @@ export default function AdminDashboard() {
 
   const getDayInventory = (date: Date) => {
     if (!inventory) return {};
-    const dateKey = format(date, 'yyyy-MM-dd');
-    return inventory[dateKey] || {};
+    return inventory.stockByProduct || {};
   };
 
   const generateCalendarDays = () => {
