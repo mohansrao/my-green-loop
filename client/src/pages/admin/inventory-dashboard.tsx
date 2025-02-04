@@ -50,8 +50,9 @@ export default function InventoryDashboard() {
                 </TableHeader>
                 <TableBody>
                   {products?.map((product) => {
-                    const availableStock = inventoryData?.stockByProduct[product.id] ?? product.totalStock;
+                    const availableStock = inventoryData?.stockByProduct[product.id];
                     const stockStatus = 
+                      !availableStock ? "No Records" :
                       availableStock === 0 ? "Out of Stock" :
                       availableStock < 20 ? "Low Stock" :
                       "In Stock";
