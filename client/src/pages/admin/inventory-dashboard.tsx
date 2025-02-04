@@ -33,7 +33,14 @@ export default function AdminDashboard() {
   });
 
   const { data: inventory, isLoading: inventoryLoading } = useQuery<Record<string, Record<number, number>>>({
-    queryKey: ["/api/inventory"],
+    queryKey: ["/api/inventory", currentMonth],
+    queryFn: async () => {
+      const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+      const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+      const response = await fetch(`/api/inventory/available?startDate=${startDate}&endDate=${endDate}`);
+      const data = await response.json();
+      return data.stockByProduct || {};
+    }
   });
 
   const { data: rentals, isLoading: rentalsLoading } = useQuery<Rental[]>({
