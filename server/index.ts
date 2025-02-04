@@ -25,8 +25,11 @@ app.use((req, res, next) => {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      if (logLine.length > 120) {
+        const jsonStart = logLine.indexOf(' :: ');
+        if (jsonStart !== -1) {
+          logLine = logLine.slice(0, jsonStart) + ' :: ' + JSON.stringify(capturedJsonResponse).slice(0, 50) + '...}';
+        }
       }
 
       log(logLine);
