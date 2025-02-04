@@ -23,6 +23,9 @@ interface InventoryData {
 }
 
 export default function AdminDashboard() {
+  const [sortField, setSortField] = useState<'date' | 'name'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
@@ -64,15 +67,43 @@ export default function AdminDashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Dates</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setSortDirection(sortField === 'name' && sortDirection === 'asc' ? 'desc' : 'asc');
+                      setSortField('name');
+                    }}
+                  >
+                    Customer {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setSortDirection(sortField === 'date' && sortDirection === 'asc' ? 'desc' : 'asc');
+                      setSortField('date');
+                    }}
+                  >
+                    Dates {sortField === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Items</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rentals?.map((rental) => (
+                {rentals
+                  ?.sort((a, b) => {
+                    if (sortField === 'date') {
+                      return sortDirection === 'asc' 
+                        ? new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+                        : new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+                    } else {
+                      return sortDirection === 'asc'
+                        ? a.customerName.localeCompare(b.customerName)
+                        : b.customerName.localeCompare(a.customerName);
+                    }
+                  })
+                  .map((rental) => (
                   <TableRow key={rental.id}>
                     <TableCell>
                       <div>{rental.customerName}</div>
