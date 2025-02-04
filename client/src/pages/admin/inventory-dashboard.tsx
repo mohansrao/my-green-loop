@@ -28,6 +28,8 @@ export default function AdminDashboard() {
   const [sortField, setSortField] = useState<'date' | 'name'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
@@ -68,8 +70,6 @@ export default function AdminDashboard() {
     const dateKey = format(date, 'yyyy-MM-dd');
     return inventory[dateKey] || {};
   };
-
-  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const generateCalendarDays = () => {
     const days = [];
