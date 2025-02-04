@@ -15,9 +15,14 @@ interface InventoryData {
 }
 
 export default function AdminDashboard() {
-  // ... other existing code ...
+  const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
 
-  // Fetch rentals
+  const { data: inventory, isLoading: inventoryLoading } = useQuery({
+    queryKey: ["/api/inventory"],
+  });
+
   const { data: rentals, isLoading: rentalsLoading } = useQuery<Rental[]>({
     queryKey: ["/api/rentals"],
   });
