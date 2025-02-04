@@ -64,6 +64,16 @@ export function registerRoutes(app: Express): Server {
 
   // Get inventory for a single day
   // Get all rentals
+  app.get("/api/rental-items", async (_req, res) => {
+    try {
+      const items = await db.query.rentalItems.findMany();
+      res.json(items);
+    } catch (error) {
+      console.error('Error fetching rental items:', error);
+      res.status(500).json({ message: "Error fetching rental items" });
+    }
+  });
+
   app.get("/api/rentals", async (_req, res) => {
     try {
       const allRentals = await db.query.rentals.findMany({

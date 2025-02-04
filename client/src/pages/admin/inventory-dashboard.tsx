@@ -27,7 +27,21 @@ export default function AdminDashboard() {
     queryKey: ["/api/rentals"],
   });
 
+  const { data: rentalItems } = useQuery({
+    queryKey: ["/api/rental-items"],
+  });
+
   const isLoading = productsLoading || inventoryLoading || rentalsLoading;
+  
+  const getRentalItems = (rentalId: number) => {
+    if (!rentalItems || !products) return [];
+    return rentalItems
+      .filter((item: any) => item.rentalId === rentalId)
+      .map((item: any) => ({
+        product: products.find(p => p.id === item.productId),
+        quantity: item.quantity
+      }));
+  };
 
   return (
     <div className="p-4">
@@ -72,6 +86,16 @@ export default function AdminDashboard() {
                         <div className="font-semibold">Amount</div>
                         <div>${rental.totalAmount}</div>
                       </div>
+                    </div>
+                    <div className="mt-4 text-sm text-gray-600">
+                      <div className="font-semibold mb-1">Rented Items:</div>
+                      {getRentalItems(rental.id).map(({product, quantity}) => (
+                        product && (
+                          <div key={product.id} className="pl-2">
+                            {product.name} × {quantity}
+                          </div>
+                        )
+                      ))}
                     </div>
                   </Card>
                 ))}
