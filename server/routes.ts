@@ -62,6 +62,44 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get inventory for date range
+  app.get("/api/inventory/daily", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: "Start and end dates are required" });
+      }
+
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+
+      const inventoryForRange = await db.query.inventoryDates.findMany({
+        where: and(
+          between(
+            inventoryDates.date, 
+            format(start, 'yyyy-MM-dd'), 
+            format(end, 'yyyy-MM-dd')
+          )
+        ),
+      });
+
+      // Transform into required format
+      const dailyInventory: Record<string, Record<number, number>> = {};
+      inventoryForRange.forEach(inv => {
+        const dateKey = format(new Date(inv.date), 'yyyy-MM-dd');
+        if (!dailyInventory[dateKey]) {
+          dailyInventory[dateKey] = {};
+        }
+        dailyInventory[dateKey][inv.productId] = inv.availableStock;
+      });
+
+      res.json({ dailyInventory });
+    } catch (error) {
+      console.error('Error fetching daily inventory:', error);
+      res.status(500).json({ message: "Error fetching daily inventory" });
+    }
+  });
+
   // Get inventory for a single day
   // Get all rentals
   app.get("/api/rental-items", async (_req, res) => {
