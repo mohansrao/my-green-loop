@@ -60,15 +60,25 @@ export default function AdminDashboard() {
     return inventory.stockByProduct[format(date, 'yyyy-MM-dd')] || {};
   };
 
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   const generateCalendarDays = () => {
     const days = [];
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + i);
-      days.push(date);
+    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    
+    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d));
     }
     return days;
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const previousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
   return (
@@ -171,7 +181,16 @@ export default function AdminDashboard() {
         <TabsContent value="inventory">
           <Card>
             <CardHeader>
-              <CardTitle>30-Day Inventory Calendar</CardTitle>
+              <CardTitle className="flex justify-between items-center">
+                <span>Inventory Calendar</span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={previousMonth}>&lt; Previous</Button>
+                  <span className="font-normal">
+                    {format(currentMonth, 'MMMM yyyy')}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={nextMonth}>Next &gt;</Button>
+                </div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
