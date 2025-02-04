@@ -18,9 +18,17 @@ export default function InventoryDashboard() {
     queryKey: ["/api/products"],
   });
 
+  const handlePreviousMonth = () => {
+    setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
   // Calculate date range for current month
-  const startDate = startOfDay(selectedDate);
-  const endDate = endOfDay(addDays(startDate, 30));
+  const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  const endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
 
   // Fetch inventory levels
   const { data: inventoryData, isLoading: inventoryLoading } = useQuery<InventoryData>({
@@ -41,7 +49,14 @@ export default function InventoryDashboard() {
       <div className="grid gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Product Availability</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Product Availability</CardTitle>
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" onClick={handlePreviousMonth}>&lt; Previous</Button>
+                <span className="font-semibold">{format(selectedDate, 'MMMM yyyy')}</span>
+                <Button variant="outline" size="sm" onClick={handleNextMonth}>Next &gt;</Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -53,7 +68,7 @@ export default function InventoryDashboard() {
                 ))}
                 {days.map((day, index) => (
                   <Card key={index} className="p-2 min-h-[120px] text-sm">
-                    <div className="font-semibold mb-1">{format(day, 'd')}</div>
+                    <div className="font-semibold mb-1">{format(day, 'MMM d')}</div>
                     <div className="space-y-1">
                       {products?.map(product => (
                         <div key={product.id} className="flex justify-between">
