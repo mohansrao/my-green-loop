@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Product } from "@db/schema";
-import { formatDate } from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 
 interface InventoryData {
   stockByProduct: Record<string, number>;
@@ -15,10 +15,11 @@ export default function InventoryDashboard() {
   });
 
   // Fetch current inventory levels
+  const today = new Date();
   const { data: inventoryData, isLoading: inventoryLoading } = useQuery<InventoryData>({
     queryKey: ["/api/inventory/available", {
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
+      startDate: startOfDay(today).toISOString(),
+      endDate: endOfDay(today).toISOString(),
     }],
   });
 
@@ -54,7 +55,7 @@ export default function InventoryDashboard() {
                       availableStock === 0 ? "Out of Stock" :
                       availableStock < 20 ? "Low Stock" :
                       "In Stock";
-                    
+
                     return (
                       <TableRow key={product.id}>
                         <TableCell>{product.name}</TableCell>
