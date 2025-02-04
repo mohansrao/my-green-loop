@@ -19,8 +19,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 
-interface InventoryData {
-  stockByProduct: Record<string, number>;
+interface DailyInventoryData {
+  dailyInventory: Record<string, Record<number, number>>;
 }
 
 export default function AdminDashboard() {
@@ -64,8 +64,9 @@ export default function AdminDashboard() {
   };
 
   const getDayInventory = (date: Date) => {
-    if (!inventory) return {};
-    return inventory.stockByProduct;
+    if (!inventory?.dailyInventory) return {};
+    const dateKey = format(date, 'yyyy-MM-dd');
+    return inventory.dailyInventory[dateKey] || {};
   };
 
   const generateCalendarDays = () => {
