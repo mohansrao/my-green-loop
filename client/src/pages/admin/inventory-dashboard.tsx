@@ -27,9 +27,6 @@ export default function AdminDashboard() {
   return (
     <div className="p-4">
       <div className="flex flex-col md:flex-row gap-6">
-        {/* ... other existing code ... */}
-        </Card>
-
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Customer Bookings</CardTitle>
