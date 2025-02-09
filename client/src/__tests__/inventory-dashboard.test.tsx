@@ -31,10 +31,9 @@ describe('Inventory Dashboard API Tests', () => {
     expect(result.current.data).toBeDefined();
   });
 
-  it('should fetch inventory data successfully', async () => {
-    const currentMonth = new Date();
-    const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
-    const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+  it('should fetch inventory data for Feb 2025', async () => {
+    const startDate = '2025-02-01';
+    const endDate = '2025-02-28';
 
     const { result } = renderHook(
       () => useQuery({
