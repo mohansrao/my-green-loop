@@ -18,7 +18,7 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
   return (
     <Card className="overflow-hidden">
       <img
-        src={product.imageUrl}
+        src={product.imageUrl.startsWith('http') ? product.imageUrl : `/images/${product.imageUrl}`}
         alt={product.name}
         className="w-full h-48 object-cover"
       />
