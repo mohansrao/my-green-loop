@@ -95,23 +95,23 @@ export function registerRoutes(app: Express): Server {
 
       // Transform into required format
       const dailyInventory: Record<string, Record<number, number>> = {};
-
-      // If no inventory records exist, use totalStock from products
-      if (inventoryForRange.length === 0) {
-        const dateKey = format(start, 'yyyy-MM-dd');
+      
+      // Initialize all dates with default stock for all products
+      let currentDate = start;
+      while (currentDate <= end) {
+        const dateKey = format(currentDate, 'yyyy-MM-dd');
         dailyInventory[dateKey] = {};
         allProducts.forEach(product => {
           dailyInventory[dateKey][product.id] = product.totalStock;
         });
-      } else {
-        inventoryForRange.forEach(inv => {
-          const dateKey = format(new Date(inv.date), 'yyyy-MM-dd');
-          if (!dailyInventory[dateKey]) {
-            dailyInventory[dateKey] = {};
-          }
-          dailyInventory[dateKey][inv.productId] = inv.availableStock;
-        });
+        currentDate = addDays(currentDate, 1);
       }
+
+      // Override with actual inventory records where they exist
+      inventoryForRange.forEach(inv => {
+        const dateKey = format(new Date(inv.date), 'yyyy-MM-dd');
+        dailyInventory[dateKey][inv.productId] = inv.availableStock;
+      });
 
       console.log('[/api/inventory/daily] Response:', { dailyInventory });
       res.json({ dailyInventory });
