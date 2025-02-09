@@ -23,14 +23,14 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
   return (
     <Card className="overflow-hidden">
       <img
-        src={product.imageUrl}
+        src={`/images/${product.imageUrl}`}
         alt={product.name}
         className="w-full h-48 object-cover"
       />
       <CardContent className="pt-6">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold text-lg">{product.name}</h3>
-          <span className="text-green-700">₹{formatPrice(product.pricePerDay)}/day</span>
+          <span className="text-green-700">${formatPrice(product.pricePerDay)}/day</span>
         </div>
         <p className="text-gray-600 text-sm mb-4">{product.description}</p>
         <p className="text-sm mb-2">
