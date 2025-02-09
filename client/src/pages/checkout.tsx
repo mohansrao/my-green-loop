@@ -91,6 +91,11 @@ export default function Checkout() {
     <div className="min-h-screen bg-green-50 py-12">
       <div className="container mx-auto max-w-7xl px-4">
         <div className="max-w-3xl mx-auto space-y-6">
+          <div className="flex justify-between items-center mb-6">
+            <Button variant="outline" onClick={() => navigate('/catalog')}>
+              ← Back to Catalog
+            </Button>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
