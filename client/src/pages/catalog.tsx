@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ProductCard from "@/components/product-card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@db/schema";
@@ -16,7 +15,6 @@ interface ProductAvailability extends Product {
 }
 
 export default function Catalog() {
-  const [showCalendar, setShowCalendar] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>();
   const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
   const [cart, setCart] = useState<Map<number, number>>(new Map());
@@ -43,7 +41,6 @@ export default function Catalog() {
         }));
 
         setProductAvailability(availability);
-        setShowCalendar(false);
       } catch (error) {
         toast({
           title: "Error",
@@ -88,102 +85,77 @@ export default function Catalog() {
     }
   };
 
-  const handleChangeDates = () => {
-    setShowCalendar(true);
-    setCart(new Map());
-    setProductAvailability([]);
-  };
 
   return (
     <div className="min-h-screen bg-green-50">
-      <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold text-green-800">
-              Select Your Rental Period
-            </DialogTitle>
-            <DialogDescription className="text-base text-gray-600">
-              To ensure availability of our eco-friendly dining items, please select your desired rental dates.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-6">
-            <div className="grid gap-6 mb-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <Calendar className="h-6 w-6 text-green-600 mt-1" />
-                    <div>
-                      <h3 className="font-medium mb-2">Why Select Two Dates?</h3>
-                      <p className="text-sm text-gray-600">
-                        Choose your pickup date (when you'll receive the items) and return date (when you'll return them). 
-                        This helps us ensure the items are available for your entire event.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <Clock className="h-6 w-6 text-green-600 mt-1" />
-                    <div>
-                      <h3 className="font-medium mb-2">Rental Duration</h3>
-                      <p className="text-sm text-gray-600">
-                        You can rent items for up to 30 days. Prices are calculated per day, and you'll only be charged for the days you select.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <CalendarPicker 
-              onDateRangeChange={setDateRange}
-            />
-            <Button
-              className="w-full mt-6 bg-green-700 hover:bg-green-800"
-              disabled={!dateRange?.from || !dateRange?.to}
-              onClick={handleNext}
-            >
-              View Available Items
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <div className="container mx-auto px-4 py-8">
-        {!showCalendar && (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <Button onClick={handleChangeDates} variant="outline">
-                Change Dates
-              </Button>
-              {cart.size > 0 && (
-                <Button onClick={handleProceedToCheckout}>
-                  Proceed to Checkout ({Array.from(cart.values()).reduce((a, b) => a + b, 0)} items)
-                </Button>
-              )}
-            </div>
+        <div className="grid gap-6 mb-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <Calendar className="h-6 w-6 text-green-600 mt-1" />
+                <div>
+                  <h3 className="font-medium mb-2">Why Select Two Dates?</h3>
+                  <p className="text-sm text-gray-600">
+                    Choose your pickup date (when you'll receive the items) and return date (when you'll return them). 
+                    This helps us ensure the items are available for your entire event.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {isLoading ? (
-                <div>Loading...</div>
-              ) : (
-                productAvailability.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    availableStock={product.availableStock}
-                    onAddToCart={(quantity) => handleAddToCart(product.id, quantity)}
-                    cartQuantity={cart.get(product.id) || 0}
-                  />
-                ))
-              )}
-            </div>
-          </>
-        )}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <Clock className="h-6 w-6 text-green-600 mt-1" />
+                <div>
+                  <h3 className="font-medium mb-2">Rental Duration</h3>
+                  <p className="text-sm text-gray-600">
+                    You can rent items for up to 30 days. Prices are calculated per day, and you'll only be charged for the days you select.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <CalendarPicker
+          className="bg-white mb-6"
+          onDateRangeChange={setDateRange}
+        />
+
+        <Button
+          onClick={handleNext}
+          disabled={!dateRange?.from || !dateRange?.to}
+          className="w-full"
+        >
+          Check Availability
+        </Button>
+
+        <div className="flex justify-between items-center mt-6">
+          {cart.size > 0 && (
+            <Button onClick={handleProceedToCheckout}>
+              Proceed to Checkout ({Array.from(cart.values()).reduce((a, b) => a + b, 0)} items)
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {isLoading ? (
+            <div>Loading...</div>
+          ) : (
+            productAvailability.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                availableStock={product.availableStock}
+                onAddToCart={(quantity) => handleAddToCart(product.id, quantity)}
+                cartQuantity={cart.get(product.id) || 0}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
