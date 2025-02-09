@@ -1,3 +1,4 @@
+
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
@@ -23,8 +24,8 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
     <Card className={className}>
       <div className="p-4">
         <h3 className="font-medium mb-4">Select Rental Dates</h3>
-        <div className="w-full overflow-x-auto">
-          <div className="min-w-[600px]">
+        <div className="max-w-full overflow-x-auto">
+          <div className="inline-block min-w-full">
             <Calendar
               mode="range"
               selected={date}
