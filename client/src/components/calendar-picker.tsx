@@ -23,7 +23,7 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
   return (
     <Card className={className}>
       <div className="p-4">
-        <h3 className="font-medium mb-4">Select Rental Dates</h3>
+        <h3 className="font-medium mb-4">Select Pick up and Return Dates</h3>
         <div className="max-w-full overflow-x-auto">
           <div className="inline-block min-w-full">
             <Calendar

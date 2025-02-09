@@ -89,30 +89,16 @@ export default function Catalog() {
   return (
     <div className="min-h-screen bg-green-50">
       <div className="container mx-auto px-4 py-8">
+        <h2 className="text-2xl font-semibold mb-6">Event Date</h2>
         <div className="grid gap-6 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
                 <Calendar className="h-6 w-6 text-green-600 mt-1" />
                 <div>
-                  <h3 className="font-medium mb-2">Why Select Two Dates?</h3>
                   <p className="text-sm text-gray-600">
-                    Choose your pickup date (when you'll receive the items) and return date (when you'll return them). 
+                    Choose your pickup date (when you'll pick the items) and return date (when you'll return them). 
                     This helps us ensure the items are available for your entire event.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <Clock className="h-6 w-6 text-green-600 mt-1" />
-                <div>
-                  <h3 className="font-medium mb-2">Rental Duration</h3>
-                  <p className="text-sm text-gray-600">
-                    You can rent items for up to 30 days. Prices are calculated per day, and you'll only be charged for the days you select.
                   </p>
                 </div>
               </div>
