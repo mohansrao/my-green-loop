@@ -89,8 +89,8 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-green-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="max-w-3xl mx-auto space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>

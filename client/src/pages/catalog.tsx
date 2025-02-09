@@ -88,7 +88,7 @@ export default function Catalog() {
 
   return (
     <div className="min-h-screen bg-green-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <h2 className="text-2xl font-semibold mb-6">Event Date</h2>
         <div className="grid gap-6 mb-6">
           <Card>
@@ -114,7 +114,7 @@ export default function Catalog() {
         <Button
           onClick={handleNext}
           disabled={!dateRange?.from || !dateRange?.to}
-          className="w-full"
+          className="w-full max-w-md mx-auto block"
         >
           Check Availability
         </Button>

@@ -6,7 +6,7 @@ import { Leaf, Recycle, Calendar } from "lucide-react";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto max-w-7xl px-4 py-16">
         <header className="text-center mb-16">
           <h1 className="text-4xl font-bold text-green-800 mb-4">
             Eco-Friendly Dining Rentals
@@ -53,11 +53,11 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="text-center">
+        <div className="max-w-6xl mx-auto">
           <img
             src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6"
             alt="Eco-friendly outdoor dining event with sustainable tableware"
-            className="rounded-lg mx-auto mb-8 max-w-4xl w-full object-cover h-[500px]"
+            className="rounded-lg mx-auto mb-8 w-full object-cover h-[500px]"
           />
         </div>
       </div>
