@@ -112,13 +112,30 @@ export default function Checkout() {
                   <div className="space-y-2">
                     {cartItems.map(([productId, quantity]) => {
                       const product = getProductDetails(productId);
-                      return product ? (
+                      if (!product) return null;
+                      const days = Math.ceil((new Date(rentalDates.endDate).getTime() - new Date(rentalDates.startDate).getTime()) / (1000 * 60 * 60 * 24));
+                      const itemTotal = Number(product.pricePerDay) * quantity * days;
+                      return (
                         <div key={productId} className="flex justify-between text-sm">
-                          <span>{product.name}</span>
-                          <span>x{quantity}</span>
+                          <span>{product.name} (x{quantity})</span>
+                          <div className="text-right">
+                            <div>${Number(product.pricePerDay).toFixed(2)}/day</div>
+                            <div className="font-medium">${itemTotal.toFixed(2)}</div>
+                          </div>
                         </div>
-                      ) : null;
+                      );
                     })}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex justify-between font-semibold">
+                        <span>Total</span>
+                        <span>${cartItems.reduce((total, [productId, quantity]) => {
+                          const product = getProductDetails(productId);
+                          if (!product) return total;
+                          const days = Math.ceil((new Date(rentalDates.endDate).getTime() - new Date(rentalDates.startDate).getTime()) / (1000 * 60 * 60 * 24));
+                          return total + (Number(product.pricePerDay) * quantity * days);
+                        }, 0).toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
