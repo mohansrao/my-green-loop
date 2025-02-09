@@ -23,14 +23,18 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
     <Card className={className}>
       <div className="p-4">
         <h3 className="font-medium mb-4">Select Rental Dates</h3>
-        <Calendar
-          mode="range"
-          selected={date}
-          onSelect={handleSelect}
-          numberOfMonths={2}
-          disabled={(date) => date < new Date() || date > addDays(new Date(), 90)}
-          className="rounded-md border"
-        />
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[600px]">
+            <Calendar
+              mode="range"
+              selected={date}
+              onSelect={handleSelect}
+              numberOfMonths={2}
+              disabled={(date) => date < new Date() || date > addDays(new Date(), 90)}
+              className="rounded-md border"
+            />
+          </div>
+        </div>
       </div>
     </Card>
   );
