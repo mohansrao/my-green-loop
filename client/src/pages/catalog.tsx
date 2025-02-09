@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ProductCard from "@/components/product-card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@db/schema";
 import CalendarPicker from "@/components/calendar-picker";
 import type { DateRange } from "react-day-picker";
 import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, Clock } from "lucide-react";
 
 interface ProductAvailability extends Product {
   availableStock: number;
@@ -29,7 +30,6 @@ export default function Catalog() {
   const handleNext = async () => {
     if (dateRange?.from && dateRange?.to) {
       try {
-        // Check inventory availability for each product
         const response = await fetch(
           `/api/inventory/available?startDate=${dateRange.from.toISOString()}&endDate=${dateRange.to.toISOString()}`
         );
@@ -37,7 +37,6 @@ export default function Catalog() {
 
         if (!products) return;
 
-        // Map products with their availability
         const availability = products.map(product => ({
           ...product,
           availableStock: data.stockByProduct[product.id] || 0
@@ -99,20 +98,56 @@ export default function Catalog() {
     <div className="min-h-screen bg-green-50">
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
         <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-green-800">
+              Select Your Rental Period
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              To ensure availability of our eco-friendly dining items, please select your desired rental dates.
+            </DialogDescription>
+          </DialogHeader>
+
           <div className="py-6">
-            <h2 className="text-2xl font-semibold mb-2 text-green-800">Select Your Rental Period</h2>
-            <p className="text-gray-600 mb-6">
-              Choose your preferred pickup and return dates.
-            </p>
+            <div className="grid gap-6 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Calendar className="h-6 w-6 text-green-600 mt-1" />
+                    <div>
+                      <h3 className="font-medium mb-2">Why Select Two Dates?</h3>
+                      <p className="text-sm text-gray-600">
+                        Choose your pickup date (when you'll receive the items) and return date (when you'll return them). 
+                        This helps us ensure the items are available for your entire event.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Clock className="h-6 w-6 text-green-600 mt-1" />
+                    <div>
+                      <h3 className="font-medium mb-2">Rental Duration</h3>
+                      <p className="text-sm text-gray-600">
+                        You can rent items for up to 30 days. Prices are calculated per day, and you'll only be charged for the days you select.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <CalendarPicker 
               onDateRangeChange={setDateRange}
             />
             <Button
-              className="w-full mt-6"
+              className="w-full mt-6 bg-green-700 hover:bg-green-800"
               disabled={!dateRange?.from || !dateRange?.to}
               onClick={handleNext}
             >
-              Next
+              View Available Items
             </Button>
           </div>
         </DialogContent>
