@@ -105,9 +105,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-green-800 mb-8">Frequently Asked Questions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+          <div className="text-center mb-12 mt-24">
+            <h2 className="text-3xl font-bold text-green-800 mb-12">Frequently Asked Questions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 text-left max-w-5xl mx-auto">
               <div>
                 <h3 className="text-lg font-semibold mb-2">Should I wash the tableware before use?</h3>
                 <p className="text-gray-600">Not required but we recommend checking well before the event and ensure the tableware is clean.</p>
