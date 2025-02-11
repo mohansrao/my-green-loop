@@ -27,7 +27,7 @@ export default function Home() {
               <Leaf className="w-12 h-12 text-green-600 mb-4" />
               <h2 className="text-xl font-semibold mb-2">Eco-Friendly</h2>
               <p className="text-gray-600">
-                All our items are sustainably sourced and help reduce single-use waste
+                We offer reusable plates, glasses and cutlery that help reduce single-use waste
               </p>
             </CardContent>
           </Card>
