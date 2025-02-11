@@ -229,11 +229,8 @@ export function registerRoutes(app: Express): Server {
         )
       });
 
-      const daysRented = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const totalAmount = productsData.reduce((total, product) => {
-        const item = items.find(i => i.productId === product.id);
-        return total + (Number(product.pricePerDay) * daysRented * (item?.quantity || 0));
-      }, 0);
+      const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
+      const totalAmount = totalUnits <= 50 ? 15 : 30;
 
       // Insert the rental record
       const [rental] = await db.insert(rentals).values({

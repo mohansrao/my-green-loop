@@ -8,7 +8,6 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
-  pricePerDay: decimal("price_per_day", { precision: 10, scale: 2 }).notNull(),
   totalStock: integer("total_stock").notNull().default(100),
 });
 
