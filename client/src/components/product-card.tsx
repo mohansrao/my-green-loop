@@ -7,13 +7,14 @@ import { useState } from "react";
 interface ProductCardProps {
   product: Product;
   availableStock: number;
-  onAddToCart: (quantity: number) => void;
-  cartQuantity: number;
+  onAddToCart?: (quantity: number) => void;
+  cartQuantity?: number;
+  showInventoryOnly?: boolean;
 }
 
-export default function ProductCard({ product, availableStock, onAddToCart, cartQuantity }: ProductCardProps) {
+export default function ProductCard({ product, availableStock, onAddToCart, cartQuantity, showInventoryOnly = true }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
-  const remainingStock = availableStock - cartQuantity;
+  const remainingStock = availableStock - (cartQuantity || 0);
 
   const formatPrice = (price: number | string) => {
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
@@ -33,36 +34,42 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
           <span className="text-green-700">${formatPrice(product.pricePerDay)}/day</span>
         </div>
         <p className="text-gray-600 text-sm mb-4">{product.description}</p>
-        <p className="text-sm mb-2">
-          Available: <span className={remainingStock > 0 ? "text-green-600" : "text-red-600"}>
-            {remainingStock}
-          </span>
-        </p>
-        {cartQuantity > 0 && (
-          <p className="text-sm text-blue-600 mb-2">
-            In Cart: {cartQuantity}
-          </p>
+        {showInventoryOnly && (
+          <>
+            <p className="text-sm mb-2">
+              Available: <span className={remainingStock > 0 ? "text-green-600" : "text-red-600"}>
+                {remainingStock}
+              </span>
+            </p>
+            {cartQuantity > 0 && (
+              <p className="text-sm text-blue-600 mb-2">
+                In Cart: {cartQuantity}
+              </p>
+            )}
+          </>
         )}
       </CardContent>
-      <CardFooter className="flex gap-2">
-        <Input
-          type="number"
-          min="1"
-          max={remainingStock}
-          value={quantity}
-          onChange={(e) => setQuantity(Math.min(parseInt(e.target.value) || 1, remainingStock))}
-          className="w-24"
-          disabled={remainingStock === 0}
-        />
-        <Button 
-          variant="outline" 
-          className="flex-1"
-          onClick={() => onAddToCart(quantity)}
-          disabled={remainingStock === 0}
-        >
-          Add to Cart
-        </Button>
-      </CardFooter>
+      {showInventoryOnly && (
+        <CardFooter className="flex gap-2">
+          <Input
+            type="number"
+            min="1"
+            max={remainingStock}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.min(parseInt(e.target.value) || 1, remainingStock))}
+            className="w-24"
+            disabled={remainingStock === 0}
+          />
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => onAddToCart && onAddToCart(quantity)}
+            disabled={remainingStock === 0}
+          >
+            Add to Cart
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

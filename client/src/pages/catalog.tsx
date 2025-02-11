@@ -15,6 +15,7 @@ interface ProductAvailability extends Product {
 }
 
 export default function Catalog() {
+  const [showInventoryCheck, setShowInventoryCheck] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>();
   const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
   const [cart, setCart] = useState<Map<number, number>>(new Map());
@@ -89,35 +90,60 @@ export default function Catalog() {
   return (
     <div className="min-h-screen bg-green-50">
       <div className="container mx-auto max-w-7xl px-4 py-8">
-        <h2 className="text-2xl font-semibold mb-6">Event Date</h2>
-        <div className="grid gap-6 mb-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <Calendar className="h-6 w-6 text-green-600 mt-1" />
-                <div>
-                  <p className="text-sm text-gray-600">
-                    Choose your pickup date (when you'll pick the items) and return date (when you'll return them). 
-                    This helps us ensure the items are available for your entire event.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {!showInventoryCheck ? (
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-semibold">Our Products</h2>
+              <Button onClick={() => setShowInventoryCheck(true)} className="bg-green-700 hover:bg-green-800">
+                Check Availability & Rent
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                products?.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product}
+                    availableStock={product.totalStock}
+                    showInventoryOnly={true}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-semibold mb-6">Event Date</h2>
+            <div className="grid gap-6 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Calendar className="h-6 w-6 text-green-600 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        Choose your pickup date (when you'll pick the items) and return date (when you'll return them). 
+                        This helps us ensure the items are available for your entire event.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        <CalendarPicker
-          className="bg-white mb-6"
-          onDateRangeChange={setDateRange}
-        />
+            <CalendarPicker
+              className="bg-white mb-6"
+              onDateRangeChange={setDateRange}
+            />
 
-        <Button
-          onClick={handleNext}
-          disabled={!dateRange?.from || !dateRange?.to}
-          className="w-full max-w-md mx-auto block"
-        >
-          Check Availability
-        </Button>
+            <Button
+              onClick={handleNext}
+              disabled={!dateRange?.from || !dateRange?.to}
+              className="w-full max-w-md mx-auto block"
+            >
+              Check Availability
+            </Button>
 
         <div className="flex justify-between items-center mt-6">
           {cart.size > 0 && (
