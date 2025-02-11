@@ -16,11 +16,6 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
   const [quantity, setQuantity] = useState(1);
   const remainingStock = availableStock - (cartQuantity || 0);
 
-  const formatPrice = (price: number | string) => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return numPrice.toFixed(2);
-  };
-
   return (
     <Card className="overflow-hidden">
       <img
@@ -29,9 +24,8 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
         className="w-full h-48 object-cover"
       />
       <CardContent className="pt-6">
-        <div className="flex justify-between items-start mb-2">
+        <div className="mb-2">
           <h3 className="font-semibold text-lg">{product.name}</h3>
-          <span className="text-green-700">${formatPrice(product.pricePerDay)}/day</span>
         </div>
         <p className="text-gray-600 text-sm mb-4">{product.description}</p>
         {showInventoryOnly && (
