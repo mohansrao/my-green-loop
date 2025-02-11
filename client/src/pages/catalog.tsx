@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -86,7 +87,6 @@ export default function Catalog() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-green-50">
       <div className="container mx-auto max-w-7xl px-4 py-8">
@@ -145,29 +145,31 @@ export default function Catalog() {
               Check Availability
             </Button>
 
-        <div className="flex justify-between items-center mt-6">
-          {cart.size > 0 && (
-            <Button onClick={handleProceedToCheckout}>
-              Proceed to Checkout ({Array.from(cart.values()).reduce((a, b) => a + b, 0)} items)
-            </Button>
-          )}
-        </div>
+            <div className="flex justify-between items-center mt-6">
+              {cart.size > 0 && (
+                <Button onClick={handleProceedToCheckout}>
+                  Proceed to Checkout ({Array.from(cart.values()).reduce((a, b) => a + b, 0)} items)
+                </Button>
+              )}
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {isLoading ? (
-            <div>Loading...</div>
-          ) : (
-            productAvailability.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                availableStock={product.availableStock}
-                onAddToCart={(quantity) => handleAddToCart(product.id, quantity)}
-                cartQuantity={cart.get(product.id) || 0}
-              />
-            ))
-          )}
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                productAvailability.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    availableStock={product.availableStock}
+                    onAddToCart={(quantity) => handleAddToCart(product.id, quantity)}
+                    cartQuantity={cart.get(product.id) || 0}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
