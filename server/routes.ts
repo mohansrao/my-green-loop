@@ -229,8 +229,18 @@ export function registerRoutes(app: Express): Server {
         )
       });
 
-      const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
-      const totalAmount = totalUnits <= 50 ? 15 : 30;
+      // Group items by category and calculate total units per category
+      const categoryQuantities = items.reduce((acc, item) => {
+        const product = productsData.find(p => p.id === item.productId);
+        if (product) {
+          acc[product.category] = (acc[product.category] || 0) + item.quantity;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+
+      // If any category has more than 50 units, charge $30, otherwise $15
+      const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
+      const totalAmount = hasOverage ? 30 : 15;
 
       // Insert the rental record
       const [rental] = await db.insert(rentals).values({
