@@ -36,40 +36,40 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
         <p className="text-gray-600 text-sm mb-4">{product.description}</p>
         {showInventoryOnly && (
           <>
-            <p className="text-sm mb-2">
-              Available: <span className={remainingStock > 0 ? "text-green-600" : "text-red-600"}>
-                {remainingStock}
-              </span>
-            </p>
             {cartQuantity > 0 && (
               <p className="text-sm text-blue-600 mb-2">
                 In Cart: {cartQuantity}
               </p>
             )}
+            <div className="mt-2">
+              <p className="text-sm mb-2">
+                Available: <span className={remainingStock > 0 ? "text-green-600" : "text-red-600"}>
+                  {remainingStock}
+                </span>
+              </p>
+              <CardFooter className="flex gap-2 px-0">
+                <Input
+                  type="number"
+                  min="1"
+                  max={remainingStock}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.min(parseInt(e.target.value) || 1, remainingStock))}
+                  className="w-24"
+                  disabled={remainingStock === 0}
+                />
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => onAddToCart && onAddToCart(quantity)}
+                  disabled={remainingStock === 0}
+                >
+                  Add to Cart
+                </Button>
+              </CardFooter>
+            </div>
           </>
         )}
       </CardContent>
-      {showInventoryOnly && (
-        <CardFooter className="flex gap-2">
-          <Input
-            type="number"
-            min="1"
-            max={remainingStock}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.min(parseInt(e.target.value) || 1, remainingStock))}
-            className="w-24"
-            disabled={remainingStock === 0}
-          />
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => onAddToCart && onAddToCart(quantity)}
-            disabled={remainingStock === 0}
-          >
-            Add to Cart
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 }

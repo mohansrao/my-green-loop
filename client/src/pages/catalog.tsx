@@ -107,7 +107,7 @@ export default function Catalog() {
                     key={product.id} 
                     product={product}
                     availableStock={product.totalStock}
-                    showInventoryOnly={true}
+                    showInventoryOnly={false}
                   />
                 ))
               )}
