@@ -47,7 +47,7 @@ export default function Home() {
               <Recycle className="w-12 h-12 text-green-600 mb-4" />
               <h2 className="text-xl font-semibold mb-2">Zero Waste</h2>
               <p className="text-gray-600">
-                Professional cleaning and reuse cycle for all rental items
+                Reuse tableware and enjoy your party guilt-free by generating zero waste
               </p>
             </CardContent>
           </Card>
