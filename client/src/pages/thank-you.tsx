@@ -60,21 +60,16 @@ export default function ThankYou() {
                       {rentalDetails.items.map(([productId, quantity]) => {
                         const product = products?.find(p => p.id === productId);
                         if (!product) return null;
-                        const days = Math.ceil((new Date(rentalDetails.returnDate).getTime() - new Date(rentalDetails.pickupDate).getTime()) / (1000 * 60 * 60 * 24));
-                        const itemTotal = Number(product.pricePerDay) * quantity * days;
                         return (
                           <div key={productId} className="pl-2 flex justify-between">
                             <span>{getProductName(productId)} x{quantity}</span>
-                            <span className="text-gray-600">${itemTotal.toFixed(2)}</span>
                           </div>
                         );
                       })}
                       <div className="mt-4 pt-2 border-t border-gray-200">
                         <div className="flex justify-between font-medium">
                           <span>Total</span>
-                          <span>${rentalDetails.items.reduce((total, [productId, quantity]) => {
-                            const product = products?.find(p => p.id === productId);
-                            if (!product) return total;
+                          <span>${rentalDetails.totalAmount?.toFixed(2)}</span>
                             const days = Math.ceil((new Date(rentalDetails.returnDate).getTime() - new Date(rentalDetails.pickupDate).getTime()) / (1000 * 60 * 60 * 24));
                             return total + (Number(product.pricePerDay) * quantity * days);
                           }, 0).toFixed(2)}</span>
