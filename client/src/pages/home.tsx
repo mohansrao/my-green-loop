@@ -70,6 +70,38 @@ export default function Home() {
                 <h3 className="text-lg font-semibold mb-2">Choose Your Event Date</h3>
                 <p className="text-gray-600">Select when you need the tableware for your event</p>
               </div>
+
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-green-800">2</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Check Inventory</h3>
+                <p className="text-gray-600">Browse available items for your selected dates</p>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-green-800">3</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Make the Booking</h3>
+                <p className="text-gray-600">Complete your reservation with delivery details</p>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-green-800">4</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Pick Up Items</h3>
+                <p className="text-gray-600">Collect your items on the Pick Up date</p>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-green-800">5</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Return Items</h3>
+                <p className="text-gray-600">Return clean items by the Return date</p>
+              </div>
             </div>
           </div>
         </div>
