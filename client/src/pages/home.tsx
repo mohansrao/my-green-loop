@@ -14,11 +14,18 @@ export default function Home() {
           <p className="text-lg text-green-700 max-w-2xl mx-auto">
             Rent sustainable tableware for your events. Make a difference while creating memorable experiences.
           </p>
-          <Link href="/catalog">
-            <Button className="mt-8 bg-green-700 hover:bg-green-800">
-              Rent Now
-            </Button>
-          </Link>
+          <div className="flex gap-4 justify-center">
+            <Link href="/catalog">
+              <Button className="mt-8 bg-green-700 hover:bg-green-800">
+                Rent Now
+              </Button>
+            </Link>
+            <Link href="/catalog">
+              <Button variant="outline" className="mt-8 text-green-700 border-green-700 hover:bg-green-50">
+                View Catalog
+              </Button>
+            </Link>
+          </div>
         </header>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
