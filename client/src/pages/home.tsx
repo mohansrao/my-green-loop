@@ -57,8 +57,21 @@ export default function Home() {
           <img
             src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6"
             alt="Eco-friendly outdoor dining event with sustainable tableware"
-            className="rounded-lg mx-auto mb-8 w-full object-cover h-[500px]"
+            className="rounded-lg mx-auto mb-16 w-full object-cover h-[500px]"
           />
+          
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-green-800 mb-8">How It Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-green-800">1</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Choose Your Event Date</h3>
+                <p className="text-gray-600">Select when you need the tableware for your event</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
