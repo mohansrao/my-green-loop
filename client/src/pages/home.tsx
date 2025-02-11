@@ -104,6 +104,46 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-green-800 mb-8">Frequently Asked Questions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Should I wash the tableware before use?</h3>
+                <p className="text-gray-600">Not required but we recommend checking well before the event and ensure the tableware is clean.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Should I wash the tableware after use?</h3>
+                <p className="text-gray-600">Yes. Please return all the items in clean condition.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Will you deliver?</h3>
+                <p className="text-gray-600">No. We don't.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Where is the pick up location?</h3>
+                <p className="text-gray-600">In Sunnyvale at the intersection of Wolfe and Homestead.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">How do I make the payment?</h3>
+                <p className="text-gray-600">You can make via PayPal, Venmo or cash when you pick up.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">How many dinner plates and glasses can I rent?</h3>
+                <p className="text-gray-600">Up to a max of 100 units.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Do you rent tables and chairs?</h3>
+                <p className="text-gray-600">No, we don't.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
