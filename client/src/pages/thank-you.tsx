@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -13,6 +14,7 @@ interface RentalConfirmation extends RentalFormData {
   items: [number, number][];
   pickupDate: string;
   returnDate: string;
+  totalAmount: number;
 }
 
 export default function ThankYou() {
@@ -70,9 +72,6 @@ export default function ThankYou() {
                         <div className="flex justify-between font-medium">
                           <span>Total</span>
                           <span>${rentalDetails.totalAmount?.toFixed(2)}</span>
-                            const days = Math.ceil((new Date(rentalDetails.returnDate).getTime() - new Date(rentalDetails.pickupDate).getTime()) / (1000 * 60 * 60 * 24));
-                            return total + (Number(product.pricePerDay) * quantity * days);
-                          }, 0).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
