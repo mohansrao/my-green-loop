@@ -43,12 +43,18 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
               </p>
               <CardFooter className="flex gap-2 px-0">
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   max={remainingStock}
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.min(parseInt(e.target.value) || 1, remainingStock))}
-                  className="w-24"
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    const num = val ? Math.min(parseInt(val), remainingStock) : 1;
+                    setQuantity(num);
+                  }}
+                  className="w-24 text-center"
                   disabled={remainingStock === 0}
                 />
                 <Button
