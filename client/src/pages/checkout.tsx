@@ -89,7 +89,8 @@ export default function Checkout() {
         id: rentalDetails.id,
         items: cartItems,
         pickupDate: rentalDates.startDate,
-        returnDate: rentalDates.endDate
+        returnDate: rentalDates.endDate,
+        totalAmount
       }));
 
       // Clear the rental dates and cart
