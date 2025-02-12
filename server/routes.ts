@@ -244,6 +244,102 @@ export function registerRoutes(app: Express): Server {
         }
 
         // Calculate total amount
+        const productsData = await db.query.products.findMany({
+          where: inArray(
+            products.id, 
+            items.map(item => item.productId)
+          )
+        });
+
+        // Group items by category and calculate total units per category
+        const categoryQuantities = items.reduce((acc, item) => {
+          const product = productsData.find(p => p.id === item.productId);
+          if (product) {
+            acc[product.category] = (acc[product.category] || 0) + item.quantity;
+          }
+          return acc;
+        }, {} as Record<string, number>);
+
+        // If any category has more than 50 units, charge $30, otherwise $15
+        const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
+        const totalAmount = hasOverage ? 30 : 15;
+
+        // Insert the rental record
+        const [rental] = await db.insert(rentals).values({
+          customerName,
+          customerEmail,
+          startDate: start,
+          endDate: end,
+          totalAmount,
+          status: "pending",
+          deliveryOption: "pickup",
+          deliveryAddress: null,
+          deliveryDate: start,
+          pickupDate: start,
+          createdAt: new Date(),
+        }).returning();
+
+        // Create rental items and update inventory
+        for (const item of items) {
+          await db.insert(rentalItems).values({
+            rentalId: rental.id,
+            productId: item.productId,
+            quantity: item.quantity
+          });
+
+          // Update inventory for each date in the range
+          let currentDate = start;
+          while (currentDate <= end) {
+            const formattedDate = format(currentDate, 'yyyy-MM-dd');
+
+            await db
+              .insert(inventoryDates)
+              .values({
+                date: formattedDate,
+                productId: item.productId,
+                availableStock: 100 - item.quantity,
+              })
+              .onConflictDoUpdate({
+                target: [inventoryDates.date, inventoryDates.productId],
+                set: {
+                  availableStock: sql`${inventoryDates.availableStock} - ${item.quantity}`,
+                },
+              });
+
+            currentDate = addDays(currentDate, 1);
+          }
+        }
+
+        return rental;
+      });
+
+      res.status(201).json(rental);
+        // Lock and check inventory with FOR UPDATE
+        const inventoryForRange = await tx.query.inventoryDates.findMany({
+          where: and(
+            between(
+              inventoryDates.date, 
+              format(start, 'yyyy-MM-dd'), 
+              format(end, 'yyyy-MM-dd')
+            )
+          ),
+          for: 'update'
+        });
+
+        // Verify inventory availability for each product
+        for (const item of items) {
+          const minStock = inventoryForRange.length > 0
+            ? Math.min(...inventoryForRange
+                .filter(inv => inv.productId === item.productId)
+                .map(inv => inv.availableStock))
+            : 100;
+
+          if (minStock < item.quantity) {
+            throw new Error(`Not enough inventory available for product ID ${item.productId}`);
+          }
+        }
+
+        // Calculate total amount
       const productsData = await db.query.products.findMany({
         where: inArray(
           products.id, 
