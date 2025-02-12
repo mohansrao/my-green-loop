@@ -136,6 +136,27 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/calculate-price", async (req, res) => {
+    try {
+      const { items } = req.body;
+      const categoryQuantities = items.reduce((acc, item) => {
+        const product = productsData.find(p => p.id === item.productId);
+        if (product) {
+          acc[product.category] = (acc[product.category] || 0) + item.quantity;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
+      const totalAmount = hasOverage ? 30 : 15;
+      
+      res.json({ totalAmount });
+    } catch (error) {
+      console.error('Error calculating price:', error);
+      res.status(500).json({ message: "Error calculating price" });
+    }
+  });
+
   app.get("/api/rentals", async (_req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

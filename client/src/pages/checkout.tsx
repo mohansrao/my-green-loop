@@ -22,6 +22,24 @@ const formSchema = z.object({
 export default function Checkout() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const [totalAmount, setTotalAmount] = useState<number>();
+
+  useEffect(() => {
+    const calculatePrice = async () => {
+      try {
+        const formattedItems = cartItems.map(([productId, quantity]) => ({
+          productId,
+          quantity
+        }));
+        const response = await apiRequest("POST", "/api/calculate-price", { items: formattedItems });
+        const data = await response.json();
+        setTotalAmount(data.totalAmount);
+      } catch (error) {
+        console.error('Error calculating price:', error);
+      }
+    };
+    calculatePrice();
+  }, [cartItems]);
 
   // Retrieve rental dates and cart from sessionStorage
   const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
@@ -127,18 +145,7 @@ export default function Checkout() {
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>${(() => {
-                          const categoryQuantities = cartItems.reduce((acc, [productId, quantity]) => {
-                            const product = products?.find(p => p.id === productId);
-                            if (product) {
-                              acc[product.category] = (acc[product.category] || 0) + quantity;
-                            }
-                            return acc;
-                          }, {} as Record<string, number>);
-                          
-                          const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
-                          return hasOverage ? "30.00" : "15.00";
-                        })()}</span>
+                        <span>${totalAmount?.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
