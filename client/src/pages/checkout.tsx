@@ -127,7 +127,18 @@ export default function Checkout() {
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>${cartItems.reduce((total, [, quantity]) => total + quantity, 0) <= 50 ? "15.00" : "30.00"}</span>
+                        <span>${(() => {
+                          const categoryQuantities = cartItems.reduce((acc, [productId, quantity]) => {
+                            const product = products?.find(p => p.id === productId);
+                            if (product) {
+                              acc[product.category] = (acc[product.category] || 0) + quantity;
+                            }
+                            return acc;
+                          }, {} as Record<string, number>);
+                          
+                          const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
+                          return hasOverage ? "30.00" : "15.00";
+                        })()}</span>
                       </div>
                     </div>
                   </div>
