@@ -216,33 +216,34 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ message: "Invalid date format" });
       }
 
-      // Check if enough inventory is available for each product
-      const inventoryForRange = await db.query.inventoryDates.findMany({
-        where: and(
-          between(
-            inventoryDates.date, 
-            format(start, 'yyyy-MM-dd'), 
-            format(end, 'yyyy-MM-dd')
-          )
-        ),
-      });
+      // Use transaction to ensure atomic operations
+      const rental = await db.transaction(async (tx) => {
+        // Lock and check inventory with FOR UPDATE
+        const inventoryForRange = await tx.query.inventoryDates.findMany({
+          where: and(
+            between(
+              inventoryDates.date, 
+              format(start, 'yyyy-MM-dd'), 
+              format(end, 'yyyy-MM-dd')
+            )
+          ),
+          for: 'update'
+        });
 
-      // Verify inventory availability for each product
-      for (const item of items) {
-        const minStock = inventoryForRange.length > 0
-          ? Math.min(...inventoryForRange
-              .filter(inv => inv.productId === item.productId)
-              .map(inv => inv.availableStock))
-          : 100;
+        // Verify inventory availability for each product
+        for (const item of items) {
+          const minStock = inventoryForRange.length > 0
+            ? Math.min(...inventoryForRange
+                .filter(inv => inv.productId === item.productId)
+                .map(inv => inv.availableStock))
+            : 100;
 
-        if (minStock < item.quantity) {
-          return res.status(400).json({ 
-            message: `Not enough inventory available for product ID ${item.productId}` 
-          });
+          if (minStock < item.quantity) {
+            throw new Error(`Not enough inventory available for product ID ${item.productId}`);
+          }
         }
-      }
 
-      // Calculate total amount
+        // Calculate total amount
       const productsData = await db.query.products.findMany({
         where: inArray(
           products.id, 
@@ -313,7 +314,11 @@ export function registerRoutes(app: Express): Server {
       res.status(201).json(rental);
     } catch (error) {
       console.error('Error creating rental:', error);
-      res.status(500).json({ message: "Error creating rental" });
+      if (error.message.includes('Not enough inventory')) {
+        res.status(409).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Error creating rental" });
+      }
     }
   });
 
