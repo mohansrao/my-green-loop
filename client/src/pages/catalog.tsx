@@ -25,32 +25,37 @@ export default function Catalog() {
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
   });
 
-  const handleNext = async () => {
-    if (dateRange?.from && dateRange?.to) {
-      try {
-        const response = await fetch(
+  const { data: availabilityData, refetch: refetchAvailability } = useQuery({
+    queryKey: ["inventory-available", dateRange?.from, dateRange?.to],
+    queryFn: async () => {
+      if (!dateRange?.from || !dateRange?.to) return null;
+      const response = await fetch(
           `/api/inventory/available?startDate=${dateRange.from.toISOString()}&endDate=${dateRange.to.toISOString()}`
         );
         const data = await response.json();
+        return data;
+      },
+      enabled: !!dateRange?.from && !!dateRange?.to,
+      refetchInterval: 30000,
+      staleTime: 15000,
+    });
 
-        if (!products) return;
-
-        const availability = products.map(product => ({
-          ...product,
-          availableStock: data.stockByProduct[product.id] || 0
-        }));
-
-        setProductAvailability(availability);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to check inventory availability.",
-          variant: "destructive",
-        });
-      }
+  useEffect(() => {
+    if (availabilityData && products) {
+      const availability = products.map(product => ({
+        ...product,
+        availableStock: availabilityData.stockByProduct[product.id] || 0
+      }));
+      setProductAvailability(availability);
     }
+  }, [availabilityData, products]);
+
+  const handleNext = () => {
+    refetchAvailability();
   };
 
   const handleAddToCart = (productId: number, quantity: number) => {
