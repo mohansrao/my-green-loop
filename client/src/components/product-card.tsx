@@ -51,8 +51,12 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
                   value={quantity}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9]/g, '');
-                    const num = val ? Math.min(parseInt(val), remainingStock) : 1;
-                    setQuantity(num);
+                    if (val === '') {
+                      setQuantity(1);
+                    } else {
+                      const num = Math.min(parseInt(val), remainingStock);
+                      setQuantity(num);
+                    }
                   }}
                   className="w-24 text-center"
                   disabled={remainingStock === 0}
