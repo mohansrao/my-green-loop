@@ -13,7 +13,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, availableStock, onAddToCart, cartQuantity, showInventoryOnly = true }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('');
   const remainingStock = availableStock - (cartQuantity || 0);
 
   return (
@@ -64,7 +64,7 @@ export default function ProductCard({ product, availableStock, onAddToCart, cart
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => onAddToCart && onAddToCart(quantity)}
+                  onClick={() => onAddToCart && onAddToCart(Number(quantity) || 1)}
                   disabled={remainingStock === 0}
                 >
                   Add to Cart
