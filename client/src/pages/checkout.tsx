@@ -24,6 +24,10 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [totalAmount, setTotalAmount] = useState<number>();
+  
+  // Retrieve rental dates and cart from sessionStorage
+  const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
+  const cartItems: [number, number][] = JSON.parse(sessionStorage.getItem('cart') || '[]');
 
   useEffect(() => {
     const calculatePrice = async () => {
@@ -41,10 +45,6 @@ export default function Checkout() {
     };
     calculatePrice();
   }, [cartItems]);
-
-  // Retrieve rental dates and cart from sessionStorage
-  const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
-  const cartItems: [number, number][] = JSON.parse(sessionStorage.getItem('cart') || '[]');
 
   // Fetch products to get details for cart items
   const { data: products } = useQuery<Product[]>({
