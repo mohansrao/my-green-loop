@@ -139,8 +139,10 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/calculate-price", async (req, res) => {
     try {
       const { items } = req.body;
+      const products = await db.query.products.findMany();
+      
       const categoryQuantities = items.reduce((acc, item) => {
-        const product = productsData.find(p => p.id === item.productId);
+        const product = products.find(p => p.id === item.productId);
         if (product) {
           acc[product.category] = (acc[product.category] || 0) + item.quantity;
         }
