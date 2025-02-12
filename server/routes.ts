@@ -143,17 +143,9 @@ export function registerRoutes(app: Express): Server {
       const products = await db.query.products.findMany();
       console.log('[Price Calculation] Found products:', products);
       
-      const categoryQuantities = items.reduce((acc, item) => {
-        const product = products.find(p => p.id === item.productId);
-        if (product) {
-          acc[product.category] = (acc[product.category] || 0) + item.quantity;
-          console.log(`[Price Calculation] Added ${item.quantity} units to category ${product.category}`);
-        }
-        return acc;
-      }, {} as Record<string, number>);
-      
-      console.log('[Price Calculation] Category quantities:', categoryQuantities);
-      const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
+      const hasOverage = items.some(item => item.quantity > 50);
+      console.log('[Price Calculation] Items with quantities:', items);
+      console.log('[Price Calculation] Has overage:', hasOverage);
       console.log('[Price Calculation] Has overage:', hasOverage);
       const totalAmount = hasOverage ? 30 : 15;
       console.log('[Price Calculation] Final total amount:', totalAmount);
