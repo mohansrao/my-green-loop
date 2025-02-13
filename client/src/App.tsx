@@ -8,6 +8,7 @@ import Catalog from "@/pages/catalog";
 import Checkout from "@/pages/checkout";
 import ThankYou from "@/pages/thank-you";
 import InventoryDashboard from "@/pages/admin/inventory-dashboard";
+import Layout from "@/components/layout/layout";
 
 function Router() {
   return (
@@ -25,7 +26,9 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
+      <Layout>
+        <Router />
+      </Layout>
       <Toaster />
     </QueryClientProvider>
   );
