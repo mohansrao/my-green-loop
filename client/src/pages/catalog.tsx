@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -120,7 +119,15 @@ export default function Catalog() {
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-semibold mb-6">Event Date</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Plan Your Event</h2>
+                <p className="text-muted-foreground">Choose your rental dates</p>
+              </div>
+              <Button variant="ghost" onClick={() => window.location.href='/'}>
+                ← Back to Home
+              </Button>
+            </div>
             <div className="grid gap-6 mb-6">
               <Card>
                 <CardContent className="pt-6">

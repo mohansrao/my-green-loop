@@ -44,7 +44,7 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
           </Alert>
         )}
         <div className="max-w-full overflow-x-auto">
-          <div className="inline-block min-w-full">
+          <div className="flex justify-center min-w-full">
             <Calendar
               mode="range"
               selected={date}
@@ -57,7 +57,7 @@ export default function CalendarPicker({ className, onDateRangeChange }: Calenda
                   return date >= date.from && date <= addDays(date.from, 5);
                 }
               }}
-              className="rounded-md border"
+              className="rounded-md border shadow-md bg-white p-1"
             />
           </div>
         </div>
