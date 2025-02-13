@@ -1,0 +1,10 @@
+<svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular loop element -->
+  <path d="M25 20c0-8.284 6.716-15 15-15v2c-7.18 0-13 5.82-13 13s5.82 13 13 13v2c-8.284 0-15-6.716-15-15z" fill="#166534"/>
+  <path d="M35 5c8.284 0 15 6.716 15 15s-6.716 15-15 15v-2c7.18 0 13-5.82 13-13s-5.82-13-13-13V5z" fill="#166534"/>
+  
+  <!-- Text "My Green Loop" -->
+  <text x="60" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#166534">
+    My Green Loop
+  </text>
+</svg>

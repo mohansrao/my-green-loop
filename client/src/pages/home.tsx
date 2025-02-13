@@ -8,6 +8,9 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto max-w-7xl px-4 py-16">
         <header className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+            <img src="/logo.svg" alt="My Green Loop" className="h-10 w-auto" />
+          </div>
           <h1 className="text-4xl font-bold text-green-800 mb-4">
             Eco-Friendly Dining Rentals
           </h1>
