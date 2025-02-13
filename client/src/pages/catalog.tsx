@@ -149,13 +149,7 @@ export default function Catalog() {
               onDateRangeChange={setDateRange}
             />
 
-            <Button
-              onClick={handleNext}
-              disabled={!dateRange?.from || !dateRange?.to}
-              className="w-full max-w-md mx-auto block"
-            >
-              Check Availability
-            </Button>
+            
 
             <div className="flex justify-between items-center mt-6">
               {cart.size > 0 && (
