@@ -60,87 +60,168 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="max-w-6xl mx-auto">
-          <img
-            src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6"
-            alt="Eco-friendly outdoor dining event with sustainable tableware"
-            className="rounded-lg mx-auto mb-16 w-full object-cover h-[500px]"
-          />
-          
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-green-800 mb-8">How It Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-green-800">1</span>
+        <div className="max-w-6xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-green-800 text-center mb-8">Perfect for Every Occasion</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70"
+                alt="Family gathering outdoors with eco-friendly tableware"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">Family Gatherings</h3>
+                  <p className="text-sm">Reunions, BBQs & Picnics</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Choose Your Event Date</h3>
-                <p className="text-gray-600">Select when you need the tableware for your event</p>
               </div>
+            </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-green-800">2</span>
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3"
+                alt="Outdoor celebration setup"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">Celebrations</h3>
+                  <p className="text-sm">Birthdays, Anniversaries & More</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Select & Book Items</h3>
-                <p className="text-gray-600">Browse available items and complete your reservation</p>
               </div>
+            </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-green-800">3</span>
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1519046904884-53103b34b206"
+                alt="Beach gathering with sustainable dining"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">Outdoor Events</h3>
+                  <p className="text-sm">Beach Days & Park Activities</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Pick Up Items</h3>
-                <p className="text-gray-600">Collect your items on the Pick Up date</p>
               </div>
+            </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-green-800">4</span>
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205"
+                alt="Cultural celebration setup"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">Cultural Events</h3>
+                  <p className="text-sm">Quinceañeras, Bar/Bat Mitzvahs</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Return Items</h3>
-                <p className="text-gray-600">Return clean items by the Return date</p>
+              </div>
+            </div>
+
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622"
+                alt="School event celebration"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">School Events</h3>
+                  <p className="text-sm">Graduations & End-of-Year Parties</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative group overflow-hidden rounded-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3"
+                alt="Sports event gathering"
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold">Sports Events</h3>
+                  <p className="text-sm">Team Celebrations & Gatherings</p>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="text-center mb-12 mt-24">
-            <h2 className="text-3xl font-bold text-green-800 mb-12">Frequently Asked Questions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 text-left max-w-5xl mx-auto">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Should I wash the tableware before use?</h3>
-                <p className="text-gray-600">Not required but we recommend checking well before the event and ensure the tableware is clean.</p>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-green-800 mb-8">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-xl font-bold text-green-800">1</span>
               </div>
+              <h3 className="text-lg font-semibold mb-2">Choose Your Event Date</h3>
+              <p className="text-gray-600">Select when you need the tableware for your event</p>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Should I wash the tableware after use?</h3>
-                <p className="text-gray-600">Yes. Please return all the items in clean condition.</p>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-xl font-bold text-green-800">2</span>
               </div>
+              <h3 className="text-lg font-semibold mb-2">Select & Book Items</h3>
+              <p className="text-gray-600">Browse available items and complete your reservation</p>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Will you deliver?</h3>
-                <p className="text-gray-600">No. We don't.</p>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-xl font-bold text-green-800">3</span>
               </div>
+              <h3 className="text-lg font-semibold mb-2">Pick Up Items</h3>
+              <p className="text-gray-600">Collect your items on the Pick Up date</p>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Where is the pick up location?</h3>
-                <p className="text-gray-600">In Sunnyvale at the intersection of Wolfe and Homestead.</p>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-xl font-bold text-green-800">4</span>
               </div>
+              <h3 className="text-lg font-semibold mb-2">Return Items</h3>
+              <p className="text-gray-600">Return clean items by the Return date</p>
+            </div>
+          </div>
+        </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">How do I make the payment?</h3>
-                <p className="text-gray-600">You can make via PayPal, Venmo or cash when you pick up.</p>
-              </div>
+        <div className="text-center mb-12 mt-24">
+          <h2 className="text-3xl font-bold text-green-800 mb-12">Frequently Asked Questions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 text-left max-w-5xl mx-auto">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Should I wash the tableware before use?</h3>
+              <p className="text-gray-600">Not required but we recommend checking well before the event and ensure the tableware is clean.</p>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">How many dinner plates and glasses can I rent?</h3>
-                <p className="text-gray-600">Up to a max of 100 units.</p>
-              </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Should I wash the tableware after use?</h3>
+              <p className="text-gray-600">Yes. Please return all the items in clean condition.</p>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Do you rent tables and chairs?</h3>
-                <p className="text-gray-600">No, we don't.</p>
-              </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Will you deliver?</h3>
+              <p className="text-gray-600">No. We don't.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Where is the pick up location?</h3>
+              <p className="text-gray-600">In Sunnyvale at the intersection of Wolfe and Homestead.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">How do I make the payment?</h3>
+              <p className="text-gray-600">You can make via PayPal, Venmo or cash when you pick up.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">How many dinner plates and glasses can I rent?</h3>
+              <p className="text-gray-600">Up to a max of 100 units.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Do you rent tables and chairs?</h3>
+              <p className="text-gray-600">No, we don't.</p>
             </div>
           </div>
         </div>
