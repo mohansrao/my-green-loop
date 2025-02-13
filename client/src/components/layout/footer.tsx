@@ -6,19 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t">
       <div className="container mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo and Description */}
-          <div className="space-y-4">
-            <Link href="/">
-              <a>
-                <img src="/logo.svg" alt="My Green Loop" className="h-8 w-auto" />
-              </a>
-            </Link>
-            <p className="text-sm text-gray-600">
-              Transforming sustainable event experiences through smart dining item management.
-            </p>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Quick Links */}
           <div>
             <h3 className="font-semibold mb-4">Quick Links</h3>
