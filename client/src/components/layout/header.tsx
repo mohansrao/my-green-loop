@@ -18,11 +18,6 @@ export default function Header() {
                 Catalog
               </a>
             </Link>
-            <Link href="/admin/inventory">
-              <a className="text-sm font-medium text-gray-700 hover:text-green-700">
-                Dashboard
-              </a>
-            </Link>
             <Button asChild variant="outline" className="ml-4">
               <Link href="/catalog">Rent Now</Link>
             </Button>
