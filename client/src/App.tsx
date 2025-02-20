@@ -17,7 +17,7 @@ function Router() {
       <Route path="/catalog" component={Catalog} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />
-      <Route path="/admin/inventory" component={InventoryDashboard} />
+      <Route path="/admin/dashboard" component={InventoryDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
