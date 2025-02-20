@@ -121,7 +121,7 @@ export default function Catalog() {
           <>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold">Choose your rental dates</h2>
+                <h2 className="text-2xl font-bold">Choose Your Rental Dates</h2>
               </div>
               <Button variant="ghost" onClick={() => window.location.href='/'}>
                 ← Back to Home
