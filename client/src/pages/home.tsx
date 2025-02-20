@@ -223,6 +223,11 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-2">Do you rent tables and chairs?</h3>
               <p className="text-gray-600">No, we don't.</p>
             </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">How much does it cost?</h3>
+              <p className="text-gray-600">50 sets or less is $15 and anything more than that upto 100 is $30. This is the total cost which includes pick up and drop off days. Each set has a plate, glass, spoon and fork.</p>
+            </div>
           </div>
         </div>
       </div>
