@@ -8,7 +8,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/">
             <a className="flex items-center">
-              <img src="/logo.png" alt="My Green Loop" className="h-8 w-auto" />
+              <img src="/images/logo.png" alt="My Green Loop" className="h-8 w-auto" />
             </a>
           </Link>
 
