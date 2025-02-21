@@ -308,6 +308,12 @@ export function registerRoutes(app: Express): Server {
           }
         }
 
+        // Import at the top of the file
+        import { sendOrderNotification } from './utils/notifications';
+        
+        // Send notification after successful rental creation
+        await sendOrderNotification(rental.id, rental.customerName, Number(rental.totalAmount));
+        
         return rental;
       });
 
