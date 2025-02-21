@@ -4,6 +4,7 @@ import { db } from "@db";
 import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
 import { eq, and, between, sql, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
+import { sendOrderNotification } from './utils/notifications';
 
 export function registerRoutes(app: Express): Server {
   // Get all products
@@ -308,9 +309,6 @@ export function registerRoutes(app: Express): Server {
           }
         }
 
-        // Import at the top of the file
-        import { sendOrderNotification } from './utils/notifications';
-        
         // Send notification after successful rental creation
         await sendOrderNotification(rental.id, rental.customerName, Number(rental.totalAmount));
         
