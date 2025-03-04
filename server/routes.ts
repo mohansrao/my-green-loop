@@ -310,7 +310,11 @@ export function registerRoutes(app: Express): Server {
         }
 
         // Send notification after successful rental creation
-        await sendOrderNotification(rental.id, rental.customerName, Number(rental.totalAmount));
+        const notificationResult = await sendOrderNotification(rental.id, rental.customerName, Number(rental.totalAmount));
+        
+        if (!notificationResult.success) {
+          console.warn(`WhatsApp notification failed, but rental was created. Rental ID: ${rental.id}`, notificationResult.hint);
+        }
         
         return rental;
       });
