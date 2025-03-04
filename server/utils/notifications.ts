@@ -20,14 +20,13 @@ export async function sendOrderNotification(orderId: number, customerName: strin
   const formattedFromNumber = formatWhatsAppNumber(twilioWhatsApp);
   const formattedToNumber = formatWhatsAppNumber(adminWhatsApp);
 
-  // Check if we should use template messages (for production)
-  const useTemplateMessages = process.env.USE_WHATSAPP_TEMPLATES === 'true';
+  // Automatically detect environment
+  const isProduction = process.env.NODE_ENV === 'production';
   
   let messageOptions;
   
-  if (useTemplateMessages) {
+  if (isProduction) {
     // Use WhatsApp approved template for production
-    // Replace 'order_notification' with your approved template name
     messageOptions = {
       from: `whatsapp:${formattedFromNumber}`,
       to: `whatsapp:${formattedToNumber}`,
@@ -38,14 +37,28 @@ export async function sendOrderNotification(orderId: number, customerName: strin
         3: `$${totalAmount}`
       })
     };
+    
+    if (debugMode) {
+      console.log('[Twilio Debug] Using production WhatsApp template message');
+      console.log('[Twilio Debug] Template variables:', {
+        orderId,
+        customerName,
+        totalAmount
+      });
+    }
   } else {
-    // Use direct message for sandbox
+    // Use direct message for development/sandbox
     const messageBody = `New Order #${orderId}\nCustomer: ${customerName}\nAmount: $${totalAmount}`;
     messageOptions = {
       body: messageBody,
       from: `whatsapp:${formattedFromNumber}`,
       to: `whatsapp:${formattedToNumber}`
     };
+    
+    if (debugMode) {
+      console.log('[Twilio Debug] Using development/sandbox message format');
+      console.log('[Twilio Debug] Message body:', messageBody);
+    }
   }
   
   if (debugMode) {
