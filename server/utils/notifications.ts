@@ -78,6 +78,7 @@ export async function sendOrderNotification(orderId: number, customerName: strin
   }
 
   try {
+    // Always log important operations for production tracking
     console.log(`[WhatsApp Notification] Sending order notification to admin (${adminWhatsApp}) for order #${orderId}`);
     
     // Send WhatsApp message
@@ -87,6 +88,7 @@ export async function sendOrderNotification(orderId: number, customerName: strin
       console.log(`[Twilio Debug] Message sent successfully. SID: ${message.sid}`);
     }
     
+    // Important success logs for production
     console.log(`[WhatsApp Notification] Successfully sent notification. SID: ${message.sid}`);
     return { success: true, sid: message.sid };
   } catch (error) {
