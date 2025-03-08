@@ -78,17 +78,21 @@ export async function sendOrderNotification(orderId: number, customerName: strin
   }
 
   try {
+    console.log(`[WhatsApp Notification] Sending order notification to admin (${adminWhatsApp}) for order #${orderId}`);
+    
     // Send WhatsApp message
     const message = await client.messages.create(messageOptions);
 
     if (debugMode) {
       console.log(`[Twilio Debug] Message sent successfully. SID: ${message.sid}`);
     }
-
+    
+    console.log(`[WhatsApp Notification] Successfully sent notification. SID: ${message.sid}`);
     return { success: true, sid: message.sid };
   } catch (error) {
     const errorDetails = error.toString();
-    console.error('Failed to send WhatsApp notification:', errorDetails);
+    console.error(`[WhatsApp Notification] FAILED to send notification for order #${orderId}:`, errorDetails);
+    console.error(`[WhatsApp Notification] Admin number used: ${adminWhatsApp}`);
 
     // Log more detailed error information
     if (debugMode) {
