@@ -23,6 +23,10 @@ if (!accountSid || !authToken || !adminWhatsApp || !twilioWhatsApp) {
 // Create Twilio client
 const client = twilio(accountSid, authToken);
 
+// Log debug status on startup
+console.log(`[Twilio Configuration] Debug mode: ${debugMode ? 'ENABLED' : 'DISABLED'}`);
+console.log(`[Twilio Configuration] Environment: ${process.env.NODE_ENV || 'development'}`);
+
 export async function sendOrderNotification(orderId: number, customerName: string, totalAmount: number) {
   // Format phone numbers to ensure they include country code and proper format
   const formattedFromNumber = formatWhatsAppNumber(twilioWhatsApp);
@@ -90,7 +94,12 @@ export async function sendOrderNotification(orderId: number, customerName: strin
     
     // Important success logs for production
     console.log(`[WhatsApp Notification] Successfully sent notification. SID: ${message.sid}`);
-    return { success: true, sid: message.sid };
+    return { 
+      success: true, 
+      sid: message.sid,
+      debugEnabled: debugMode, 
+      environment: process.env.NODE_ENV || 'development'
+    };
   } catch (error) {
     const errorDetails = error.toString();
     console.error(`[WhatsApp Notification] FAILED to send notification for order #${orderId}:`, errorDetails);
