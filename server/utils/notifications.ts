@@ -26,8 +26,12 @@ const client = twilio(accountSid, authToken);
 // Log debug status on startup
 console.log(`[Twilio Configuration] Debug mode: ${debugMode ? 'ENABLED' : 'DISABLED'}`);
 console.log(`[Twilio Configuration] Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`[Twilio Configuration] DEBUG_TWILIO env value: '${process.env.DEBUG_TWILIO}'`);
+console.log(`[Twilio Configuration] Environment variables: ${Object.keys(process.env).filter(key => key.includes('TWILIO') || key.includes('DEBUG')).join(', ')}`);
 
 export async function sendOrderNotification(orderId: number, customerName: string, totalAmount: number) {
+  console.log(`[Twilio Notification] Starting notification for order #${orderId}, debugMode=${debugMode}, NODE_ENV=${process.env.NODE_ENV}`);
+  
   // Format phone numbers to ensure they include country code and proper format
   const formattedFromNumber = formatWhatsAppNumber(twilioWhatsApp);
   const formattedToNumber = formatWhatsAppNumber(adminWhatsApp);
