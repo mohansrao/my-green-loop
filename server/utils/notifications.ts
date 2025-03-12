@@ -1,21 +1,9 @@
 import twilio from 'twilio';
 
-// Determine environment
-const isProduction = process.env.NODE_ENV === 'production';
-
-// Environment-specific Twilio credentials
-const accountSid = isProduction 
-  ? process.env.PROD_TWILIO_ACCOUNT_SID 
-  : process.env.DEV_TWILIO_ACCOUNT_SID;
-  
-const authToken = isProduction
-  ? process.env.PROD_TWILIO_AUTH_TOKEN
-  : process.env.DEV_TWILIO_AUTH_TOKEN;
-  
-const twilioWhatsApp = isProduction
-  ? process.env.PROD_TWILIO_WHATSAPP_NUMBER
-  : process.env.DEV_TWILIO_WHATSAPP_NUMBER;
-  
+// Environment variables
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
 const debugMode = process.env.DEBUG_TWILIO === 'true';
 
 // Use different admin numbers based on environment
@@ -23,11 +11,11 @@ const productionAdminNumber = process.env.PROD_ADMIN_WHATSAPP_NUMBER || '+123456
 const developmentAdminNumber = process.env.DEV_ADMIN_WHATSAPP_NUMBER || '+1987654321';
 
 // Select the appropriate admin number based on environment
-const adminWhatsApp = isProduction 
+const adminWhatsApp = process.env.NODE_ENV === 'production' 
   ? productionAdminNumber 
   : developmentAdminNumber;
 
-// Check for required environment variables
+
 if (!accountSid || !authToken || !adminWhatsApp || !twilioWhatsApp) {
   throw new Error('Missing Twilio credentials or WhatsApp numbers in environment variables');
 }
