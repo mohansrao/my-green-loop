@@ -7,10 +7,7 @@ const config = {
     authToken: process.env.TWILIO_AUTH_TOKEN,
     whatsAppNumber: process.env.TWILIO_WHATSAPP_NUMBER,
     templateSid: process.env.TWILIO_TEMPLATE_SID,
-    adminNumbers: {
-      production: process.env.PROD_ADMIN_WHATSAPP_NUMBER,
-      development: process.env.DEV_ADMIN_WHATSAPP_NUMBER
-    }
+    adminNumber: process.env.TWILIO_ADMIN_WHATSAPP_NUMBER
   },
   isProduction: process.env.NODE_ENV === 'production',
   debugMode: process.env.DEBUG_TWILIO === 'true'
@@ -23,10 +20,9 @@ if (missingVars.length > 0) {
   throw new Error(`Missing required Twilio configuration: ${missingVars.join(', ')}`);
 }
 
-// Check admin numbers
-const environment = config.isProduction ? 'production' : 'development';
-if (!config.twilio.adminNumbers[environment]) {
-  console.warn(`[Twilio Configuration] Warning: ${environment === 'production' ? 'PROD' : 'DEV'}_ADMIN_WHATSAPP_NUMBER is not set`);
+// Check admin number
+if (!config.twilio.adminNumber) {
+  console.warn('[Twilio Configuration] Warning: TWILIO_ADMIN_WHATSAPP_NUMBER is not set');
 }
 
 // Initialize Twilio client
@@ -50,7 +46,7 @@ export async function sendOrderNotification(orderId: number, customerName: strin
     isError ? console.error(`${prefix} ${message}`) : console.log(`${prefix} ${message}`);
   };
 
-  const adminNumber = config.twilio.adminNumbers[config.isProduction ? 'production' : 'development'];
+  const adminNumber = config.twilio.adminNumber;
   const formattedFromNumber = formatWhatsAppNumber(config.twilio.whatsAppNumber);
   const formattedToNumber = formatWhatsAppNumber(adminNumber);
 
