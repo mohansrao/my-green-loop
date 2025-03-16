@@ -81,6 +81,9 @@ export async function sendOrderNotification(orderId: number, customerName: strin
 
   try {
     log(`Sending notification to ${adminNumber}`);
+    if (config.debugMode) {
+      log(`Message options: ${JSON.stringify(messageOptions, null, 2)}`);
+    }
     const message = await client.messages.create(messageOptions);
     log(`Message sent successfully (SID: ${message.sid})`);
 
