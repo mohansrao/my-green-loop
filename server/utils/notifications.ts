@@ -30,6 +30,12 @@ const client = twilio(config.twilio.accountSid, config.twilio.authToken);
 console.log(`[Twilio Configuration] Environment: ${config.isProduction ? 'production' : 'development'}`);
 if (config.debugMode) {
   console.log('[Twilio Configuration] Debug mode enabled');
+  console.log('[Twilio Configuration] Config:', {
+    environment: config.isProduction ? 'production' : 'development',
+    whatsAppNumber: config.twilio.whatsAppNumber,
+    adminNumbers: config.twilio.adminNumbers,
+    hasTemplateSid: !!config.twilio.templateSid
+  });
 }
 
 export async function sendOrderNotification(orderId: number, customerName: string, totalAmount: number) {
