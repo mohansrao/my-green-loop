@@ -5,8 +5,12 @@ import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
 import { eq, and, between, sql, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './utils/notifications';
+import twilioRoutes from './routes/twilio';
 
 export function registerRoutes(app: Express): Server {
+  // Register Twilio webhook routes
+  app.use('/api/webhook/twilio', twilioRoutes);
+
   // Get all products
   app.get("/api/products", async (_req, res) => {
     try {
@@ -311,11 +315,11 @@ export function registerRoutes(app: Express): Server {
 
         // Send notification after successful rental creation
         const notificationResult = await sendOrderNotification(rental.id, rental.customerName, Number(rental.totalAmount));
-        
+
         if (!notificationResult.success) {
           console.warn(`WhatsApp notification failed, but rental was created. Rental ID: ${rental.id}`, notificationResult.hint);
         }
-        
+
         return rental;
       });
 
