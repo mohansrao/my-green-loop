@@ -6,7 +6,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Log only secret environment variables on startup
+// Log environment mode and secret variables on startup
+console.log('\n=== Environment Mode ===');
+console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+
 console.log('\n=== Secret Environment Variables ===');
 const secretKeys = [
   'DATABASE_URL',
