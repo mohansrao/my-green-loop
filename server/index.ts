@@ -6,6 +6,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Log all environment variables on startup
+console.log('\nEnvironment Variables:');
+Object.entries(process.env)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .forEach(([key, value]) => {
+    // Mask sensitive values
+    const maskedValue = key.includes('TOKEN') || key.includes('KEY') || key.includes('SECRET') || key.includes('SID')
+      ? '****'
+      : value;
+    console.log(`${key}: ${maskedValue}`);
+  });
+console.log('\n');
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
