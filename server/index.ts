@@ -26,6 +26,14 @@ secretKeys.forEach(key => {
     console.log(`${key}: ${process.env[key]}`);
   }
 });
+
+// Check for required production variables
+if (process.env.NODE_ENV === 'production' && !process.env.TWILIO_TEMPLATE_SID) {
+  console.warn('\n=== Production Configuration Warning ===');
+  console.warn('TWILIO_TEMPLATE_SID is not set. WhatsApp template messaging will not work in production.');
+  console.warn('=======================================\n');
+}
+
 console.log('=== End Secret Environment Variables ===\n');
 
 app.use((req, res, next) => {
