@@ -58,6 +58,8 @@ export async function sendOrderNotification(orderId: number, customerName: strin
       };
     }
     
+    console.log('[WhatsApp Notification] Using template SID in production:', templateSid);
+    
     messageOptions = {
       from: `whatsapp:${formattedFromNumber}`,
       to: `whatsapp:${formattedToNumber}`,
