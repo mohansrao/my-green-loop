@@ -14,15 +14,14 @@ const config = {
 };
 
 // Validate required configuration
-const requiredVars = ['accountSid', 'authToken', 'whatsAppNumber'];
+const requiredVars = ['accountSid', 'authToken', 'whatsAppNumber', 'adminNumber'];
+if (config.isProduction) {
+  requiredVars.push('templateSid');
+}
+
 const missingVars = requiredVars.filter(key => !config.twilio[key]);
 if (missingVars.length > 0) {
   throw new Error(`Missing required Twilio configuration: ${missingVars.join(', ')}`);
-}
-
-// Check admin number
-if (!config.twilio.adminNumber) {
-  console.warn('[Twilio Configuration] Warning: TWILIO_ADMIN_WHATSAPP_NUMBER is not set');
 }
 
 // Initialize Twilio client
