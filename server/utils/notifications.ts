@@ -34,8 +34,8 @@ if (config.debugMode) {
   console.log('[Twilio Configuration] Config:', {
     environment: config.isProduction ? 'production' : 'development',
     whatsAppNumber: config.twilio.whatsAppNumber,
-    adminNumbers: config.twilio.adminNumbers,
-    hasTemplateSid: !!config.twilio.templateSid
+    adminNumber: config.twilio.adminNumber,
+    templateSid: config.twilio.templateSid
   });
 }
 
