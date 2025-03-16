@@ -6,14 +6,24 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Log all environment variables on startup
-console.log('\n=== Environment Variables ===');
-Object.entries(process.env)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .forEach(([key, value]) => {
-    console.log(`${key}: ${value}`);
-  });
-console.log('=== End Environment Variables ===\n');
+// Log only secret environment variables on startup
+console.log('\n=== Secret Environment Variables ===');
+const secretKeys = [
+  'DATABASE_URL',
+  'DEBUG_TWILIO',
+  'DEV_ADMIN_WHATSAPP_NUMBER',
+  'PROD_ADMIN_WHATSAPP_NUMBER',
+  'TWILIO_ACCOUNT_SID',
+  'TWILIO_AUTH_TOKEN',
+  'TWILIO_WHATSAPP_NUMBER'
+];
+
+secretKeys.forEach(key => {
+  if (process.env[key]) {
+    console.log(`${key}: ${process.env[key]}`);
+  }
+});
+console.log('=== End Secret Environment Variables ===\n');
 
 app.use((req, res, next) => {
   const start = Date.now();
