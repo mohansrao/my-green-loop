@@ -4,11 +4,17 @@ import twilio from 'twilio';
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
+const templateSid = process.env.TWILIO_TEMPLATE_SID;
 const debugMode = process.env.DEBUG_TWILIO === 'true';
 
 // Use different admin numbers based on environment
 const productionAdminNumber = process.env.PROD_ADMIN_WHATSAPP_NUMBER || '+1234567890';
 const developmentAdminNumber = process.env.DEV_ADMIN_WHATSAPP_NUMBER || '+1987654321';
+
+// Check template SID at startup
+if (process.env.NODE_ENV === 'production' && !templateSid) {
+  console.warn('[WhatsApp Configuration] WARNING: TWILIO_TEMPLATE_SID is not set. Template messaging will not work in production.');
+}
 
 // Select the appropriate admin number based on environment
 const adminWhatsApp = process.env.NODE_ENV === 'production' 
@@ -43,10 +49,19 @@ export async function sendOrderNotification(orderId: number, customerName: strin
 
   if (isProduction) {
     // Use WhatsApp approved template for production
+    if (!templateSid) {
+      console.error('[WhatsApp Notification] Error: TWILIO_TEMPLATE_SID not set for production message');
+      return {
+        success: false,
+        error: 'Template SID not configured',
+        hint: 'Add TWILIO_TEMPLATE_SID to environment variables for production template messaging'
+      };
+    }
+    
     messageOptions = {
       from: `whatsapp:${formattedFromNumber}`,
       to: `whatsapp:${formattedToNumber}`,
-      contentSid: process.env.TWILIO_TEMPLATE_SID || '',  // Template SID if using Content API
+      contentSid: templateSid,
       contentVariables: JSON.stringify({
         1: orderId.toString(),
         2: customerName,
