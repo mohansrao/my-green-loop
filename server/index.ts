@@ -7,17 +7,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Log all environment variables on startup
-console.log('\nEnvironment Variables:');
+console.log('\n=== Environment Variables ===');
 Object.entries(process.env)
   .sort(([a], [b]) => a.localeCompare(b))
   .forEach(([key, value]) => {
-    // Mask sensitive values
-    const maskedValue = key.includes('TOKEN') || key.includes('KEY') || key.includes('SECRET') || key.includes('SID')
-      ? '****'
-      : value;
-    console.log(`${key}: ${maskedValue}`);
+    console.log(`${key}: ${value}`);
   });
-console.log('\n');
+console.log('=== End Environment Variables ===\n');
 
 app.use((req, res, next) => {
   const start = Date.now();
