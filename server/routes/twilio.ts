@@ -2,7 +2,11 @@
 import express from 'express';
 import twilio from 'twilio';
 
-// Environment configuration
+/**
+ * Environment Configuration
+ * Defines all the necessary Twilio-related configuration and environment settings.
+ * This includes account credentials, WhatsApp numbers, and operational modes.
+ */
 const config = {
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -15,10 +19,14 @@ const config = {
   debugMode: process.env.DEBUG_TWILIO === 'true'
 };
 
-// Initialize Twilio client
+// Initialize Twilio client with account credentials
 const client = twilio(config.twilio.accountSid, config.twilio.authToken);
 
-// Helper functions
+/**
+ * Formats a phone number to be compatible with Twilio's WhatsApp API
+ * @param {string} number - The phone number to format
+ * @returns {string} - Formatted phone number with country code and plus sign
+ */
 function formatWhatsAppNumber(number: string): string {
   let cleaned = number.replace(/\D/g, '');
   if (!cleaned.startsWith('1') && cleaned.length === 10) {
@@ -27,6 +35,11 @@ function formatWhatsAppNumber(number: string): string {
   return cleaned.startsWith('+') ? cleaned : '+' + cleaned;
 }
 
+/**
+ * Maps Twilio error codes to user-friendly error messages
+ * @param {any} error - The error object from Twilio
+ * @returns {string} - A user-friendly error message explaining the issue
+ */
 function getTwilioErrorHint(error: any): string {
   const hints: Record<number, string> = {
     21211: "Invalid 'To' phone number. Check number format and country code.",
@@ -39,6 +52,13 @@ function getTwilioErrorHint(error: any): string {
   return hints[error.code] || "Check Twilio console for more details.";
 }
 
+/**
+ * Sends a WhatsApp notification for a new order
+ * @param {number} orderId - The ID of the order
+ * @param {string} customerName - The name of the customer
+ * @param {number} totalAmount - The total amount of the order
+ * @returns {Promise<Object>} - Result object indicating success/failure and additional details
+ */
 export async function sendOrderNotification(orderId: number, customerName: string, totalAmount: number) {
   const log = (message: string, isError = false) => {
     const prefix = `[WhatsApp Notification][Order #${orderId}]`;
@@ -51,6 +71,7 @@ export async function sendOrderNotification(orderId: number, customerName: strin
 
   let messageOptions: any;
 
+  // Configure message based on environment (production uses templates)
   if (config.isProduction) {
     if (!config.twilio.templateSid) {
       log('Template SID not configured for production messaging', true);
@@ -111,8 +132,15 @@ export async function sendOrderNotification(orderId: number, customerName: strin
   }
 }
 
+/**
+ * Express Router for handling Twilio-related endpoints
+ */
 const router = express.Router();
 
+/**
+ * Webhook endpoint for incoming Twilio messages
+ * Logs the message content and sender information
+ */
 router.post("/message", express.urlencoded({ extended: false }), (req, res) => {
   try {
     const { Body: messageBody, From: fromNumber } = req.body;
