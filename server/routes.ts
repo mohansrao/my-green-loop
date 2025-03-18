@@ -4,7 +4,7 @@ import { db } from "@db";
 import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
 import { eq, and, between, sql, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
-import { sendOrderNotification } from './routes/twilio';
+import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
 
 export function registerRoutes(app: Express): Server {
