@@ -7,11 +7,24 @@ import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
 
+/**
+ * Registers all API routes for the application
+ * Handles endpoints for products, inventory management, rentals, and Twilio webhooks
+ * 
+ * @param {Express} app - Express application instance
+ * @returns {Server} HTTP server instance
+ */
 export function registerRoutes(app: Express): Server {
-  // Register Twilio webhook routes
+  /**
+   * Register Twilio webhook routes for handling messaging callbacks
+   */
   app.use('/api/webhook/twilio', twilioRoutes);
 
-  // Get all products
+  /**
+   * Get all available products
+   * @route GET /api/products
+   * @returns {Object[]} List of all products with their details
+   */
   app.get("/api/products", async (_req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -24,7 +37,15 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get available inventory for specific dates
+  /**
+   * Get available inventory for a specific date range
+   * Calculates minimum available stock for each product within the range
+   * 
+   * @route GET /api/inventory/available
+   * @param {string} startDate - Start date in ISO format
+   * @param {string} endDate - End date in ISO format
+   * @returns {Object} Minimum available stock for each product
+   */
   app.get("/api/inventory/available", async (req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -201,6 +222,21 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  /**
+   * Create a new rental order
+   * Handles inventory verification, rental creation, and WhatsApp notifications
+   * Uses transaction to ensure data consistency
+   * 
+   * @route POST /api/rentals
+   * @param {Object} req.body
+   * @param {string} req.body.customerName - Name of the customer
+   * @param {string} req.body.customerEmail - Email of the customer
+   * @param {string} req.body.phoneNumber - Customer's phone number
+   * @param {Object[]} req.body.items - Array of items to rent
+   * @param {string} req.body.startDate - Rental start date
+   * @param {string} req.body.endDate - Rental end date
+   * @returns {Object} Created rental order details
+   */
   app.post("/api/rentals", async (req, res) => {
     try {
       const {
