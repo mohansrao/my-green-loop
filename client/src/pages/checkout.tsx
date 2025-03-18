@@ -198,6 +198,59 @@ export default function Checkout() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
+                          <Input 
+                            {...field}
+                            type="tel"
+                            placeholder="(555) 555-5555"
+                            value={field.value}
+                            onChange={(e) => {
+                              const cleaned = e.target.value.replace(/\D/g, '');
+                              if (cleaned.length <= 10) {
+                                field.onChange(cleaned);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>U.S. numbers only (10 digits)</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="notificationPreference"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notification Preference</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="whatsapp" id="whatsapp" />
+                              <Label htmlFor="whatsapp">WhatsApp</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="sms" id="sms" />
+                              <Label htmlFor="sms">Text Message (SMS)</Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
                           <Input type="tel" {...field} />
                         </FormControl>
                         <FormMessage />
