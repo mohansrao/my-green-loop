@@ -3,7 +3,9 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -229,14 +231,10 @@ export default function Checkout() {
                             defaultValue={field.value}
                             className="flex flex-col space-y-1"
                           >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="whatsapp" id="whatsapp" />
-                              <Label htmlFor="whatsapp">WhatsApp</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="sms" id="sms" />
-                              <Label htmlFor="sms">Text Message (SMS)</Label>
-                            </div>
+                            <RadioGroupItem value="whatsapp" id="whatsapp" />
+                            <Label htmlFor="whatsapp">WhatsApp</Label>
+                            <RadioGroupItem value="sms" id="sms" />
+                            <Label htmlFor="sms">Text Message (SMS)</Label>
                           </RadioGroup>
                         </FormControl>
                         <FormMessage />
@@ -244,19 +242,6 @@ export default function Checkout() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input type="tel" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <Button type="submit" className="w-full">
                     Complete Reservation
