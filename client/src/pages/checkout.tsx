@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -24,7 +24,7 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [totalAmount, setTotalAmount] = useState<number>();
-  
+
   // Retrieve rental dates and cart from sessionStorage
   const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
   const cartItems: [number, number][] = JSON.parse(sessionStorage.getItem('cart') || '[]');
