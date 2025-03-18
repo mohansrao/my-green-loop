@@ -224,17 +224,21 @@ export default function Checkout() {
                     name="notificationPreference"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Notification Preference</FormLabel>
+                        <FormLabel>What's the best way to communicate with you</FormLabel>
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                            className="flex flex-col space-y-1"
+                            className="flex flex-col space-y-2"
                           >
-                            <RadioGroupItem value="whatsapp" id="whatsapp" />
-                            <Label htmlFor="whatsapp">WhatsApp</Label>
-                            <RadioGroupItem value="sms" id="sms" />
-                            <Label htmlFor="sms">Text Message (SMS)</Label>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="whatsapp" id="whatsapp" />
+                              <Label htmlFor="whatsapp">WhatsApp</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="sms" id="sms" />
+                              <Label htmlFor="sms">Text Message (SMS)</Label>
+                            </div>
                           </RadioGroup>
                         </FormControl>
                         <FormMessage />
