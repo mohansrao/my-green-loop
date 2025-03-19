@@ -1,4 +1,4 @@
-import type { Express } from "express";
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
