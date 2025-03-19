@@ -71,9 +71,22 @@ function getTwilioErrorHint(error: any): string {
  */
 export async function sendOrderNotification(orderId: number, customerName: string, totalAmount: number) {
   const log = (message: string, isError = false) => {
-    const prefix = `[WhatsApp Notification][Order #${orderId}]`;
-    isError ? console.error(`${prefix} ${message}`) : console.log(`${prefix} ${message}`);
+    const prefix = `[Twilio][Order #${orderId}]`;
+    const debugInfo = config.debugMode ? '[Debug Mode]' : '';
+    const logMessage = `${prefix}${debugInfo} ${message}`;
+    isError ? console.error(logMessage) : console.log(logMessage);
   };
+
+  log('Starting notification process');
+  log(`Config: ${JSON.stringify({
+    isProduction: config.isProduction,
+    debugMode: config.debugMode,
+    hasTemplateSid: !!config.twilio.templateSid,
+    hasAccountSid: !!config.twilio.accountSid,
+    hasAuthToken: !!config.twilio.authToken,
+    hasWhatsAppNumber: !!config.twilio.whatsAppNumber,
+    hasAdminNumber: !!config.twilio.adminNumber
+  })}`);
 
   const adminNumber = config.twilio.adminNumber;
   const formattedFromNumber = formatWhatsAppNumber(config.twilio.whatsAppNumber);
