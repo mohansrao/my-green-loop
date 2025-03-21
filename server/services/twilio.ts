@@ -74,36 +74,27 @@ export async function sendOrderNotification(
   orderId: number,
   customerName: string,
   totalAmount: number,
+  customerPhone?: string
 ) {
   const log = (message: string, isError = false) => {
     const prefix = `[Twilio][Order #${orderId}]`;
-    const debugInfo = config.debugMode ? "[Debug Mode]" : "";
+    const debugInfo = config.debugMode ? '[Debug Mode]' : '';
     const logMessage = `${prefix}${debugInfo} ${message}`;
     isError ? console.error(logMessage) : console.log(logMessage);
   };
 
-  log("Starting notification process");
-  log(
-    `Config: ${JSON.stringify({
-      isProduction: config.isProduction,
-      debugMode: config.debugMode,
-      hasTemplateSid: !!config.twilio.templateSid,
-      hasAccountSid: !!config.twilio.accountSid,
-      hasAuthToken: !!config.twilio.authToken,
-      hasWhatsAppNumber: !!config.twilio.whatsAppNumber,
-      hasAdminNumber: !!config.twilio.adminNumber,
-    })}`,
-  );
+  log('Starting notification process');
+  log(`Config: ${JSON.stringify({
+    isProduction: config.isProduction,
+    debugMode: config.debugMode,
+    hasTemplateSid: !!config.twilio.templateSid,
+    hasAccountSid: !!config.twilio.accountSid,
+    hasAuthToken: !!config.twilio.authToken,
+    hasWhatsAppNumber: !!config.twilio.whatsAppNumber,
+    hasAdminNumber: !!config.twilio.adminNumber
+  })}`);
 
-  const adminNumber = config.twilio.adminNumber;
-  const formattedFromNumber = formatWhatsAppNumber(
-    config.twilio.whatsAppNumber,
-  );
-  const formattedToNumber = formatWhatsAppNumber(adminNumber);
-
-  let messageOptions: any;
-
-    if (!config.twilio.templateSid) {
+  if (!config.twilio.templateSid) {
     log("Template SID not configured for production messaging", true);
     return {
       success: false,
@@ -112,48 +103,55 @@ export async function sendOrderNotification(
     };
   }
 
-  messageOptions = {
-    from: `whatsapp:${formattedFromNumber}`,
-    to: `whatsapp:${formattedToNumber}`,
-    contentSid: config.twilio.templateSid,
-    contentVariables: JSON.stringify({
-      1: orderId.toString(),
-      2: customerName,
-      3: `$${totalAmount}`,
-    }),
-  };
+  const formattedFromNumber = formatWhatsAppNumber(config.twilio.whatsAppNumber);
+  const recipients = [
+    { number: config.twilio.adminNumber, type: 'admin' },
+    ...(customerPhone ? [{ number: customerPhone, type: 'customer' }] : [])
+  ];
 
-  try {
-    log(`Sending notification to ${adminNumber}`);
-    if (config.debugMode) {
-      log(`Message options: ${JSON.stringify(messageOptions, null, 2)}`);
-    }
-    const message = await client.messages.create(messageOptions);
-    log(`Message sent successfully (SID: ${message.sid})`);
+  const results = [];
 
-    return {
-      success: true,
-      sid: message.sid,
-      debugEnabled: config.debugMode,
-      environment: config.isProduction ? "production" : "development",
+  for (const recipient of recipients) {
+    const formattedToNumber = formatWhatsAppNumber(recipient.number);
+    const messageOptions = {
+      from: `whatsapp:${formattedFromNumber}`,
+      to: `whatsapp:${formattedToNumber}`,
+      contentSid: config.twilio.templateSid,
+      contentVariables: JSON.stringify({
+        1: orderId.toString(),
+        2: customerName,
+        3: `$${totalAmount}`,
+      }),
     };
-  } catch (error) {
-    log(`Failed to send: ${error.toString()}`, true);
-    if (config.debugMode) {
-      log(
-        `Debug details: ${JSON.stringify({
-          code: error.code,
-          status: error.status,
-          moreInfo: error.moreInfo,
-        })}`,
-        true,
-      );
-    }
 
-    return {
-      success: false,
-      error: error.toString(),
-      hint: getTwilioErrorHint(error),
-    };
+    try {
+      log(`Sending notification to ${recipient.number} (${recipient.type})`);
+      if (config.debugMode) {
+        log(`Message options: ${JSON.stringify(messageOptions, null, 2)}`);
+      }
+      const message = await client.messages.create(messageOptions);
+      log(`Message sent successfully (SID: ${message.sid})`);
+      results.push({ success: true, sid: message.sid, recipient: recipient.type });
+    } catch (error) {
+      log(`Failed to send to ${recipient.number} (${recipient.type}): ${error.toString()}`, true);
+      if (config.debugMode) {
+        log(
+          `Debug details: ${JSON.stringify({
+            code: error.code,
+            status: error.status,
+            moreInfo: error.moreInfo,
+          })}`,
+          true,
+        );
+      }
+      results.push({ success: false, error: error.toString(), recipient: recipient.type, hint: getTwilioErrorHint(error) });
+    }
   }
+
+  return {
+    success: results.every(r => r.success),
+    results,
+    debugEnabled: config.debugMode,
+    environment: config.isProduction ? "production" : "development",
+  };
 }
