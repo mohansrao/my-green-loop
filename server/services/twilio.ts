@@ -130,8 +130,19 @@ export async function sendOrderNotification(
         log(`Message options: ${JSON.stringify(messageOptions, null, 2)}`);
       }
       const message = await client.messages.create(messageOptions);
-      log(`Message sent successfully (SID: ${message.sid})`);
-      results.push({ success: true, sid: message.sid, recipient: recipient.type });
+      
+      // Check message status - 'failed', 'undelivered' indicate issues
+      if (message.status === 'failed' || message.status === 'undelivered') {
+        throw new Error(`Message ${message.status}: ${message.errorMessage || 'No error message provided'}`);
+      }
+      
+      log(`Message queued (SID: ${message.sid}, Status: ${message.status})`);
+      results.push({ 
+        success: true, 
+        sid: message.sid, 
+        status: message.status,
+        recipient: recipient.type 
+      });
     } catch (error) {
       log(`Failed to send to ${recipient.number} (${recipient.type}): ${error.toString()}`, true);
       if (config.debugMode) {
