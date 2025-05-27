@@ -8,9 +8,9 @@ const config = {
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
-    whatsAppNumber: process.env.TWILIO_WHATSAPP_NUMBER,
-    templateSid: process.env.TWILIO_TEMPLATE_SID,
-    adminNumber: process.env.TWILIO_ADMIN_WHATSAPP_NUMBER,
+    whatsAppNumber: process.env.TWILIO_WHATSAPP_NUMBER?.replace(/^\++/, '+'), // Fix double plus
+    templateSid: process.env.TWILIO_TEMPLATE_SID || 'HX1234567890abcdef1234567890abcdef', // Placeholder SID
+    adminNumber: process.env.TWILIO_ADMIN_WHATSAPP_NUMBER || '+14085121293', // Default admin number
   },
   isProduction: process.env.NODE_ENV === "production",
   debugMode: process.env.DEBUG_TWILIO === "true",
@@ -27,11 +27,18 @@ const client = twilio(config.twilio.accountSid, config.twilio.authToken);
  * @returns {string} - Formatted phone number (e.g., +1XXXXXXXXXX)
  */
 function formatWhatsAppNumber(number: string): string {
+  if (!number) return "";
+  
+  // Remove all non-digits first
   let cleaned = number.replace(/\D/g, "");
+  
+  // Add country code if missing
   if (!cleaned.startsWith("1") && cleaned.length === 10) {
     cleaned = "1" + cleaned;
   }
-  return cleaned.startsWith("+") ? cleaned : "+" + cleaned;
+  
+  // Ensure single plus sign
+  return "+" + cleaned;
 }
 
 /**
@@ -94,12 +101,13 @@ export async function sendOrderNotification(
     hasAdminNumber: !!config.twilio.adminNumber
   })}`);
 
-  if (!config.twilio.templateSid) {
+  // Only require template SID in production
+  if (config.isProduction && !process.env.TWILIO_TEMPLATE_SID) {
     log("Template SID not configured for production messaging", true);
     return {
       success: false,
       error: "Template SID not configured",
-      hint: "Add TWILIO_TEMPLATE_SID to environment variables",
+      hint: "Add TWILIO_TEMPLATE_SID to environment variables for production",
     };
   }
 
@@ -113,7 +121,9 @@ export async function sendOrderNotification(
 
   for (const recipient of recipients) {
     const formattedToNumber = formatWhatsAppNumber(recipient.number);
-    const messageOptions = {
+    
+    // Use different message format for development vs production
+    const messageOptions = config.isProduction ? {
       from: `whatsapp:${formattedFromNumber}`,
       to: `whatsapp:${formattedToNumber}`,
       contentSid: config.twilio.templateSid,
@@ -122,6 +132,10 @@ export async function sendOrderNotification(
         2: customerName,
         3: `$${totalAmount}`,
       }),
+    } : {
+      from: `whatsapp:${formattedFromNumber}`,
+      to: `whatsapp:${formattedToNumber}`,
+      body: `New Order Alert!\n\nOrder #${orderId}\nCustomer: ${customerName}\nTotal: $${totalAmount}\n\nThank you for your business!`,
     };
 
     try {
