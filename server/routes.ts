@@ -358,8 +358,8 @@ export function registerRoutes(app: Express): Server {
         );
 
         if (!notificationResult.success) {
-          console.warn(`Some WhatsApp notifications failed for rental ID: ${rental.id}`, 
-            notificationResult.results.filter(r => !r.success).map(r => `${r.type}: ${r.hint}`).join(', ')
+          console.warn(`Some SMS notifications failed for rental ID: ${rental.id}`, 
+            notificationResult.results?.filter(r => !r.success).map(r => `${r.type}: ${r.hint}`).join(', ') || 'Unknown error'
           );
         }
 

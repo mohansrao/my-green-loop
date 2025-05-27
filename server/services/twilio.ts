@@ -5,14 +5,14 @@ import twilio from "twilio";
  * Contains all necessary Twilio-related configuration settings from environment variables
  */
 const config = {
+  isProduction: process.env.NODE_ENV === 'production',
+  debugMode: process.env.DEBUG_TWILIO === 'true',
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
-    smsNumber: process.env.TWILIO_SMS_NUMBER?.replace(/^\++/, '+'), // Your Twilio SMS phone number
-    adminNumber: process.env.TWILIO_ADMIN_SMS_NUMBER || '+14085121293', // Default admin number
-  },
-  isProduction: process.env.NODE_ENV === "production",
-  debugMode: process.env.DEBUG_TWILIO === "true",
+    smsNumber: process.env.TWILIO_SMS_NUMBER || process.env.TWILIO_PHONE_NUMBER,
+    adminSmsNumber: process.env.TWILIO_ADMIN_SMS_NUMBER || process.env.DEV_ADMIN_SMS_NUMBER,
+  }
 };
 
 // Initialize Twilio client with credentials
@@ -27,15 +27,15 @@ const client = twilio(config.twilio.accountSid, config.twilio.authToken);
  */
 function formatSMSNumber(number: string): string {
   if (!number) return "";
-  
+
   // Remove all non-digits first
   let cleaned = number.replace(/\D/g, "");
-  
+
   // Add country code if missing
   if (!cleaned.startsWith("1") && cleaned.length === 10) {
     cleaned = "1" + cleaned;
   }
-  
+
   // Ensure single plus sign
   return "+" + cleaned;
 }
@@ -112,7 +112,7 @@ export async function sendOrderNotification(
 
   const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
   const recipients = [
-    { number: config.twilio.adminNumber, type: 'admin' },
+    { number: config.twilio.adminSmsNumber, type: 'admin' },
     ...(customerPhone ? [{ number: customerPhone, type: 'customer' }] : [])
   ];
 
@@ -120,7 +120,7 @@ export async function sendOrderNotification(
 
   for (const recipient of recipients) {
     const formattedToNumber = formatSMSNumber(recipient.number);
-    
+
     // SMS message options (same for dev and production)
     const messageOptions = {
       from: formattedFromNumber,
@@ -134,12 +134,12 @@ export async function sendOrderNotification(
         log(`Message options: ${JSON.stringify(messageOptions, null, 2)}`);
       }
       const message = await client.messages.create(messageOptions);
-      
+
       // Check message status - 'failed', 'undelivered' indicate issues
       if (message.status === 'failed' || message.status === 'undelivered') {
         throw new Error(`Message ${message.status}: ${message.errorMessage || 'No error message provided'}`);
       }
-      
+
       log(`Message queued (SID: ${message.sid}, Status: ${message.status})`);
       results.push({ 
         success: true, 
