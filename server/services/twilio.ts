@@ -77,6 +77,29 @@ function getTwilioErrorHint(error: any): string {
  *   console.error(result.hint);
  * }
  */
+/**
+ * Automatically adds a phone number to the Twilio WhatsApp sandbox
+ * This allows them to receive messages without manual opt-in
+ */
+async function addToSandbox(phoneNumber: string): Promise<boolean> {
+  try {
+    const formattedNumber = formatWhatsAppNumber(phoneNumber);
+    
+    // Send the join message from the customer's number to the sandbox
+    await client.messages.create({
+      body: 'join',
+      from: `whatsapp:${formattedNumber}`,
+      to: `whatsapp:${config.twilio.whatsAppNumber}`
+    });
+    
+    console.log(`[Sandbox] Added ${formattedNumber} to sandbox`);
+    return true;
+  } catch (error) {
+    console.error(`[Sandbox] Failed to add ${phoneNumber}:`, error.message);
+    return false;
+  }
+}
+
 export async function sendOrderNotification(
   orderId: number,
   customerName: string,
@@ -118,6 +141,14 @@ export async function sendOrderNotification(
   ];
 
   const results = [];
+
+  // Auto-join customer to sandbox if not in production
+  if (!config.isProduction && customerPhone) {
+    const joined = await addToSandbox(customerPhone);
+    if (!joined) {
+      log("Failed to auto-join customer to sandbox", true);
+    }
+  }
 
   for (const recipient of recipients) {
     const formattedToNumber = formatWhatsAppNumber(recipient.number);
