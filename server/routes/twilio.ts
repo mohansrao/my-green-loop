@@ -24,7 +24,7 @@ router.post("/message", express.urlencoded({ extended: false }), (req, res) => {
   <Message>
     <Body>Welcome to our rental service! 🎉
 
-You're now subscribed to receive order notifications via WhatsApp. 
+You're now subscribed to receive order notifications via SMS. 
 
 You'll get updates when:
 ✅ Your order is confirmed

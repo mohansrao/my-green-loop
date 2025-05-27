@@ -8,9 +8,8 @@ const config = {
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
-    whatsAppNumber: process.env.TWILIO_WHATSAPP_NUMBER?.replace(/^\++/, '+'), // Fix double plus
-    templateSid: process.env.TWILIO_TEMPLATE_SID || 'HX1234567890abcdef1234567890abcdef', // Placeholder SID
-    adminNumber: process.env.TWILIO_ADMIN_WHATSAPP_NUMBER || '+14085121293', // Default admin number
+    smsNumber: process.env.TWILIO_SMS_NUMBER?.replace(/^\++/, '+'), // Your Twilio SMS phone number
+    adminNumber: process.env.TWILIO_ADMIN_SMS_NUMBER || '+14085121293', // Default admin number
   },
   isProduction: process.env.NODE_ENV === "production",
   debugMode: process.env.DEBUG_TWILIO === "true",
@@ -20,13 +19,13 @@ const config = {
 const client = twilio(config.twilio.accountSid, config.twilio.authToken);
 
 /**
- * Formats a phone number for WhatsApp messaging
+ * Formats a phone number for SMS messaging
  * Ensures the number is in the correct format with country code and plus sign
  *
  * @param {string} number - The phone number to format
  * @returns {string} - Formatted phone number (e.g., +1XXXXXXXXXX)
  */
-function formatWhatsAppNumber(number: string): string {
+function formatSMSNumber(number: string): string {
   if (!number) return "";
   
   // Remove all non-digits first
@@ -62,43 +61,22 @@ function getTwilioErrorHint(error: any): string {
 }
 
 /**
- * Sends a WhatsApp notification for a new order
- * In production, uses WhatsApp templates for compliance
- * In development, sends direct messages
+ * Sends an SMS notification for a new order
+ * Works in both development and production without templates
  *
  * @param {number} orderId - The unique identifier for the order
  * @param {string} customerName - The name of the customer who placed the order
  * @param {number} totalAmount - The total amount of the order
+ * @param {string} customerPhone - Customer's phone number
  * @returns {Promise<Object>} - Result object containing success status and additional details
  *
  * @example
- * const result = await sendOrderNotification(123, "John Doe", 99.99);
+ * const result = await sendOrderNotification(123, "John Doe", 99.99, "+15551234567");
  * if (!result.success) {
  *   console.error(result.hint);
  * }
  */
-/**
- * Automatically adds a phone number to the Twilio WhatsApp sandbox
- * This allows them to receive messages without manual opt-in
- */
-async function addToSandbox(phoneNumber: string): Promise<boolean> {
-  try {
-    const formattedNumber = formatWhatsAppNumber(phoneNumber);
-    
-    // Send the join message from the customer's number to the sandbox
-    await client.messages.create({
-      body: 'join',
-      from: `whatsapp:${formattedNumber}`,
-      to: `whatsapp:${config.twilio.whatsAppNumber}`
-    });
-    
-    console.log(`[Sandbox] Added ${formattedNumber} to sandbox`);
-    return true;
-  } catch (error) {
-    console.error(`[Sandbox] Failed to add ${phoneNumber}:`, error.message);
-    return false;
-  }
-}
+// SMS doesn't require sandbox setup - removed addToSandbox function
 
 export async function sendOrderNotification(
   orderId: number,
@@ -113,28 +91,26 @@ export async function sendOrderNotification(
     isError ? console.error(logMessage) : console.log(logMessage);
   };
 
-  log('Starting notification process');
+  log('Starting SMS notification process');
   log(`Config: ${JSON.stringify({
     isProduction: config.isProduction,
     debugMode: config.debugMode,
-    hasTemplateSid: !!config.twilio.templateSid,
     hasAccountSid: !!config.twilio.accountSid,
     hasAuthToken: !!config.twilio.authToken,
-    hasWhatsAppNumber: !!config.twilio.whatsAppNumber,
+    hasSMSNumber: !!config.twilio.smsNumber,
     hasAdminNumber: !!config.twilio.adminNumber
   })}`);
 
-  // Only require template SID in production
-  if (config.isProduction && !process.env.TWILIO_TEMPLATE_SID) {
-    log("Template SID not configured for production messaging", true);
+  if (!config.twilio.smsNumber) {
+    log("SMS number not configured", true);
     return {
       success: false,
-      error: "Template SID not configured",
-      hint: "Add TWILIO_TEMPLATE_SID to environment variables for production",
+      error: "SMS number not configured",
+      hint: "Add TWILIO_SMS_NUMBER to environment variables",
     };
   }
 
-  const formattedFromNumber = formatWhatsAppNumber(config.twilio.whatsAppNumber);
+  const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
   const recipients = [
     { number: config.twilio.adminNumber, type: 'admin' },
     ...(customerPhone ? [{ number: customerPhone, type: 'customer' }] : [])
@@ -142,30 +118,13 @@ export async function sendOrderNotification(
 
   const results = [];
 
-  // Auto-join customer to sandbox if not in production
-  if (!config.isProduction && customerPhone) {
-    const joined = await addToSandbox(customerPhone);
-    if (!joined) {
-      log("Failed to auto-join customer to sandbox", true);
-    }
-  }
-
   for (const recipient of recipients) {
-    const formattedToNumber = formatWhatsAppNumber(recipient.number);
+    const formattedToNumber = formatSMSNumber(recipient.number);
     
-    // Use different message format for development vs production
-    const messageOptions = config.isProduction ? {
-      from: `whatsapp:${formattedFromNumber}`,
-      to: `whatsapp:${formattedToNumber}`,
-      contentSid: config.twilio.templateSid,
-      contentVariables: JSON.stringify({
-        1: orderId.toString(),
-        2: customerName,
-        3: `$${totalAmount}`,
-      }),
-    } : {
-      from: `whatsapp:${formattedFromNumber}`,
-      to: `whatsapp:${formattedToNumber}`,
+    // SMS message options (same for dev and production)
+    const messageOptions = {
+      from: formattedFromNumber,
+      to: formattedToNumber,
       body: `New Order Alert!\n\nOrder #${orderId}\nCustomer: ${customerName}\nTotal: $${totalAmount}\n\nThank you for your business!`,
     };
 
