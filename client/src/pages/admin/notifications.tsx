@@ -13,7 +13,7 @@ interface Order {
 }
 
 export default function NotificationsDashboard() {
-  const { data: recentOrders, isLoading } = useQuery({
+  const { data: recentOrders, isLoading } = useQuery<Order[]>({
     queryKey: ['/api/orders/recent'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });

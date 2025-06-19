@@ -38,6 +38,27 @@ export function registerRoutes(app: Express): Server {
   });
 
   /**
+   * Get recent orders for admin notifications
+   * @route GET /api/orders/recent
+   * @returns {Object[]} List of recent orders
+   */
+  app.get("/api/orders/recent", async (_req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      const recentOrders = await db.query.rentals.findMany({
+        orderBy: (rentals, { desc }) => [desc(rentals.createdAt)],
+        limit: 20,
+      });
+      res.json(recentOrders);
+    } catch (error) {
+      console.error("Error fetching recent orders:", error);
+      res.status(500).json({ error: "Failed to fetch recent orders" });
+    }
+  });
+
+  /**
    * Get available inventory for a specific date range
    * Calculates minimum available stock for each product within the range
    * 
@@ -358,7 +379,7 @@ export function registerRoutes(app: Express): Server {
         );
 
         // Import and send email notifications as backup
-        const { sendOrderEmailNotification } = await import('../services/email');
+        const { sendOrderEmailNotification } = await import('./services/email');
         const emailResult = await sendOrderEmailNotification(
           rental.id,
           rental.customerName,

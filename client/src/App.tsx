@@ -8,6 +8,7 @@ import Catalog from "@/pages/catalog";
 import Checkout from "@/pages/checkout";
 import ThankYou from "@/pages/thank-you";
 import InventoryDashboard from "@/pages/admin/inventory-dashboard";
+import NotificationsDashboard from "@/pages/admin/notifications";
 import Layout from "@/components/layout/layout";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/admin/dashboard" component={InventoryDashboard} />
+      <Route path="/admin/notifications" component={NotificationsDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
