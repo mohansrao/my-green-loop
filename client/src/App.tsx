@@ -10,6 +10,8 @@ import ThankYou from "@/pages/thank-you";
 import InventoryDashboard from "@/pages/admin/inventory-dashboard";
 import NotificationsDashboard from "@/pages/admin/notifications";
 import OrdersPage from "@/pages/admin/orders";
+import AdminLogin from "@/pages/admin/login";
+import { ProtectedAdminRoute } from "@/lib/admin-auth";
 import Layout from "@/components/layout/layout";
 
 function Router() {
@@ -19,9 +21,22 @@ function Router() {
       <Route path="/catalog" component={Catalog} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />
-      <Route path="/admin/dashboard" component={InventoryDashboard} />
-      <Route path="/admin/notifications" component={NotificationsDashboard} />
-      <Route path="/admin/orders" component={OrdersPage} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard">
+        <ProtectedAdminRoute>
+          <InventoryDashboard />
+        </ProtectedAdminRoute>
+      </Route>
+      <Route path="/admin/notifications">
+        <ProtectedAdminRoute>
+          <NotificationsDashboard />
+        </ProtectedAdminRoute>
+      </Route>
+      <Route path="/admin/orders">
+        <ProtectedAdminRoute>
+          <OrdersPage />
+        </ProtectedAdminRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

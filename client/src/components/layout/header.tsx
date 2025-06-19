@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Shield } from "lucide-react";
 
 export default function Header() {
   return (
@@ -20,6 +21,12 @@ export default function Header() {
             </Link>
             <Button asChild variant="outline" className="ml-4">
               <Link href="/catalog">Rent Now</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="ml-2">
+              <Link href="/admin/login">
+                <Shield className="h-4 w-4 mr-1" />
+                Admin
+              </Link>
             </Button>
           </nav>
 
