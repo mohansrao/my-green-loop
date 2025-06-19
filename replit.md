@@ -101,10 +101,12 @@ This is a full-stack web application for an eco-friendly dining rental service c
 ### June 19, 2025 - SMS Notification System
 - Removed WhatsApp option from checkout form - now SMS only
 - Fixed SMS functionality to properly send messages when orders are completed
-- Both admin (+14083981992) and customer receive SMS notifications
+- Both admin (+16508614105) and customer receive SMS notifications
+- Verified admin phone number in Twilio account to resolve delivery issues
 - Improved phone number validation and formatting for US numbers
 - Added better error handling for invalid phone numbers
 - Messages include order number, customer name, and total amount
+- Confirmed Twilio account is upgraded (Pay-as-you-go) with sufficient balance
 
 ### June 19, 2025 - Initial setup
 - Core application architecture established
