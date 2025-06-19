@@ -25,7 +25,7 @@ function initializeTransporter() {
     return null;
   }
 
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: config.email.service,
     auth: {
       user: config.email.smtpUser,

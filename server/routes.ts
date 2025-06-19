@@ -349,7 +349,7 @@ export function registerRoutes(app: Express): Server {
           }
         }
 
-        // Send notification after successful rental creation
+        // Send notifications after successful rental creation
         const notificationResult = await sendOrderNotification(
           rental.id, 
           rental.customerName, 
@@ -357,9 +357,24 @@ export function registerRoutes(app: Express): Server {
           phoneNumber // Pass customer phone number
         );
 
+        // Import and send email notifications as backup
+        const { sendOrderEmailNotification } = await import('../services/email');
+        const emailResult = await sendOrderEmailNotification(
+          rental.id,
+          rental.customerName,
+          rental.customerEmail,
+          Number(rental.totalAmount)
+        );
+
         if (!notificationResult.success) {
-          console.warn(`Some SMS notifications failed for rental ID: ${rental.id}`, 
-            notificationResult.results?.filter(r => !r.success).map(r => `${r.type}: ${r.hint}`).join(', ') || 'Unknown error'
+          console.warn(`SMS notifications failed for rental ID: ${rental.id}`, 
+            notificationResult.results?.filter(r => !r.success).map(r => `${r.recipient}: ${r.hint}`).join(', ') || 'Unknown error'
+          );
+        }
+
+        if (!emailResult.success) {
+          console.warn(`Email notifications failed for rental ID: ${rental.id}`, 
+            emailResult.results?.filter(r => !r.success).map(r => `${r.recipient}: ${r.error}`).join(', ') || 'Unknown error'
           );
         }
 
