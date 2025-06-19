@@ -158,7 +158,10 @@ export async function sendOrderNotification(
         throw new Error(`Message ${message.status}: ${message.errorMessage || 'No error message provided'}`);
       }
 
-      log(`Message queued (SID: ${message.sid}, Status: ${message.status})`);
+      const statusMessage = message.status === 'queued' 
+        ? 'Message queued for delivery (will be delivered within minutes)' 
+        : `Message ${message.status}`;
+      log(`${statusMessage} (SID: ${message.sid})`);
       results.push({ 
         success: true, 
         sid: message.sid, 
