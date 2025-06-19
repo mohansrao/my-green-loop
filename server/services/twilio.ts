@@ -116,8 +116,8 @@ export async function sendOrderNotification(
   }
 
   const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
-  // Use fallback admin number if primary fails
-  const adminNumber = config.twilio.adminSmsNumber || '+14083981992';
+  // Use working verified number to bypass carrier blocking
+  const adminNumber = '+14083981992'; // Verified working number
   const recipients = [
     { number: adminNumber, type: 'admin' as const },
     ...(customerPhone ? [{ number: customerPhone, type: 'customer' as const }] : [])
