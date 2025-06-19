@@ -98,7 +98,7 @@ export async function sendOrderNotification(
     hasAccountSid: !!config.twilio.accountSid,
     hasAuthToken: !!config.twilio.authToken,
     hasSMSNumber: !!config.twilio.smsNumber,
-    hasAdminNumber: !!config.twilio.adminNumber
+    hasAdminNumber: !!config.twilio.adminSmsNumber
   })}`);
 
   if (!config.twilio.smsNumber) {
@@ -112,13 +112,17 @@ export async function sendOrderNotification(
 
   const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
   const recipients = [
-    { number: config.twilio.adminSmsNumber, type: 'admin' },
-    ...(customerPhone ? [{ number: customerPhone, type: 'customer' }] : [])
+    { number: config.twilio.adminSmsNumber, type: 'admin' as const },
+    ...(customerPhone ? [{ number: customerPhone, type: 'customer' as const }] : [])
   ];
 
   const results = [];
 
   for (const recipient of recipients) {
+    if (!recipient.number) {
+      log(`Skipping ${recipient.type} - no phone number configured`);
+      continue;
+    }
     const formattedToNumber = formatSMSNumber(recipient.number);
 
     // SMS message options (same for dev and production)
@@ -147,19 +151,20 @@ export async function sendOrderNotification(
         status: message.status,
         recipient: recipient.type 
       });
-    } catch (error) {
-      log(`Failed to send to ${recipient.number} (${recipient.type}): ${error.toString()}`, true);
+    } catch (error: any) {
+      const errorMessage = error?.toString() || 'Unknown error';
+      log(`Failed to send to ${recipient.number} (${recipient.type}): ${errorMessage}`, true);
       if (config.debugMode) {
         log(
           `Debug details: ${JSON.stringify({
-            code: error.code,
-            status: error.status,
-            moreInfo: error.moreInfo,
+            code: error?.code,
+            status: error?.status,
+            moreInfo: error?.moreInfo,
           })}`,
           true,
         );
       }
-      results.push({ success: false, error: error.toString(), recipient: recipient.type, hint: getTwilioErrorHint(error) });
+      results.push({ success: false, error: errorMessage, recipient: recipient.type, hint: getTwilioErrorHint(error) });
     }
   }
 
