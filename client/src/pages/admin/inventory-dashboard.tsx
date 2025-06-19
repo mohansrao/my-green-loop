@@ -1,7 +1,9 @@
-import { useState } from "react";
-import type { Rental } from "@db/schema";
+import { useState, useMemo } from "react";
+import type { Product } from "@db/schema";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardHeader,
@@ -16,231 +18,267 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { Package, AlertTriangle, TrendingUp, Search, Download } from "lucide-react";
+import AdminNav from "@/components/admin/admin-nav";
 
-interface DailyInventoryData {
-  dailyInventory: Record<string, Record<number, number>>;
-}
-
-export default function AdminDashboard() {
-  const [sortField, setSortField] = useState<'date' | 'name'>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+export default function InventoryDashboard() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
 
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  const { data: inventory, isLoading: inventoryLoading } = useQuery<{dailyInventory: Record<string, Record<number, number>>}>({
-    queryKey: ["/api/inventory/daily", currentMonth],
-    queryFn: async () => {
-      const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
-      const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
-      const response = await fetch(`/api/inventory/daily?startDate=${startDate}&endDate=${endDate}`);
-      return response.json();
-    }
-  });
+  // Calculate inventory statistics
+  const inventoryStats = useMemo(() => {
+    if (!products) return { 
+      totalProducts: 0, 
+      lowStockItems: 0, 
+      outOfStockItems: 0, 
+      categoryCounts: {},
+      averageStock: 0
+    };
+    
+    const lowStockThreshold = 5;
+    const lowStockItems = products.filter(p => p.totalStock <= lowStockThreshold && p.totalStock > 0).length;
+    const outOfStockItems = products.filter(p => p.totalStock === 0).length;
+    const averageStock = products.length > 0 ? products.reduce((sum, p) => sum + p.totalStock, 0) / products.length : 0;
+    
+    const categoryCounts = products.reduce((acc, product) => {
+      acc[product.category] = (acc[product.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return {
+      totalProducts: products.length,
+      lowStockItems,
+      outOfStockItems,
+      categoryCounts,
+      averageStock
+    };
+  }, [products]);
 
-  const { data: rentals, isLoading: rentalsLoading } = useQuery<Rental[]>({
-    queryKey: ["/api/rentals"],
-  });
+  // Filter products based on search and filters
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
+      
+      let matchesStock = true;
+      if (stockFilter === "low") {
+        matchesStock = product.totalStock <= 5 && product.totalStock > 0;
+      } else if (stockFilter === "out") {
+        matchesStock = product.totalStock === 0;
+      } else if (stockFilter === "available") {
+        matchesStock = product.totalStock > 5;
+      }
+      
+      return matchesSearch && matchesCategory && matchesStock;
+    });
+  }, [products, searchTerm, categoryFilter, stockFilter]);
 
-  const { data: rentalItems } = useQuery({
-    queryKey: ["/api/rental-items"],
-  });
-
-  const isLoading = productsLoading || inventoryLoading || rentalsLoading;
-
-  const getRentalItems = (rentalId: number) => {
-    if (!rentalItems || !products) return [];
-    return rentalItems
-      .filter((item: any) => item.rentalId === rentalId)
-      .map((item: any) => ({
-        product: products.find(p => p.id === item.productId),
-        quantity: item.quantity
-      }));
-  };
-
-  const getDayInventory = (date: Date) => {
-    if (!inventory?.dailyInventory) return {};
-    const dateKey = format(date, 'yyyy-MM-dd');
-    return inventory.dailyInventory[dateKey] || {};
-  };
-
-  const generateCalendarDays = () => {
-    const days = [];
-    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-
-    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-      days.push(new Date(d));
-    }
-    return days;
-  };
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-
-  const previousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
+  if (productsLoading) {
+    return (
+      <div>
+        <AdminNav />
+        <div className="container mx-auto p-6">
+          <h1 className="text-3xl font-bold mb-6">Inventory Management</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-green-50 py-8">
-      <div className="container mx-auto max-w-7xl px-4">
-        <Tabs defaultValue="rentals">
-          <TabsList className="mb-4">
-            <TabsTrigger value="rentals">Customer Rentals</TabsTrigger>
-            <TabsTrigger value="inventory">Inventory Calendar</TabsTrigger>
-          </TabsList>
+    <div>
+      <AdminNav />
+      <div className="container mx-auto p-6 space-y-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Inventory Management</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export Inventory
+            </Button>
+          </div>
+        </div>
 
-          <TabsContent value="rentals">
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer Bookings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div>Loading bookings...</div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => {
-                            setSortDirection(sortField === 'name' && sortDirection === 'asc' ? 'desc' : 'asc');
-                            setSortField('name');
-                          }}
-                        >
-                          Customer {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => {
-                            setSortDirection(sortField === 'date' && sortDirection === 'asc' ? 'desc' : 'asc');
-                            setSortField('date');
-                          }}
-                        >
-                          Dates {sortField === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Items</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rentals
-                        ?.sort((a, b) => {
-                          if (sortField === 'date') {
-                            return sortDirection === 'asc'
-                              ? new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-                              : new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-                          } else {
-                            return sortDirection === 'asc'
-                              ? a.customerName.localeCompare(b.customerName)
-                              : b.customerName.localeCompare(a.customerName);
-                          }
-                        })
-                        .map((rental) => (
-                          <TableRow key={rental.id}>
-                            <TableCell>
-                              <div>{rental.customerName}</div>
-                              <div className="text-sm text-gray-500">{rental.customerEmail}</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {format(new Date(rental.startDate), 'MMM d, yyyy')} -
-                                {format(new Date(rental.endDate), 'MMM d, yyyy')}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className={`
-                                inline-block px-2 py-1 rounded-full text-xs
-                                ${rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  rental.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                  'bg-blue-100 text-blue-800'}
-                              `}>
-                                {rental.status}
-                              </div>
-                            </TableCell>
-                            <TableCell>${rental.totalAmount}</TableCell>
-                            <TableCell>
-                              {getRentalItems(rental.id).map(({product, quantity}) => (
-                                product && (
-                                  <div key={product.id} className="text-sm">
-                                    {product.name} × {quantity}
-                                  </div>
-                                )
-                              ))}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Enhanced Inventory Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-800">Total Products</CardTitle>
+              <Package className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900">{inventoryStats.totalProducts}</div>
+              <p className="text-xs text-blue-600 mt-1">
+                {Object.keys(inventoryStats.categoryCounts).length} categories
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-800">Low Stock Alert</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-900">{inventoryStats.lowStockItems}</div>
+              <p className="text-xs text-yellow-600 mt-1">Items with ≤5 stock</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-red-50 to-red-100 border-red-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-800">Out of Stock</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-900">{inventoryStats.outOfStockItems}</div>
+              <p className="text-xs text-red-600 mt-1">Unavailable items</p>
+            </CardContent>
+          </Card>
+        </div>
 
-          <TabsContent value="inventory">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>Inventory Calendar</span>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={previousMonth}>&lt; Previous</Button>
-                    <span className="font-normal">
-                      {format(currentMonth, 'MMMM yyyy')}
-                    </span>
-                    <Button variant="outline" size="sm" onClick={nextMonth}>Next &gt;</Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        {generateCalendarDays().map((date) => (
-                          <TableHead key={date.toISOString()} className="text-center min-w-[100px]">
-                            {format(date, 'MMM d')}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products?.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          {generateCalendarDays().map((date) => {
-                            const stock = getDayInventory(date)[product.id] || 0;
-                            return (
-                              <TableCell
-                                key={date.toISOString()}
-                                className={`text-center ${
-                                  stock === 0 ? 'bg-red-50 text-red-800' :
-                                    stock < 3 ? 'bg-yellow-50 text-yellow-800' :
-                                    'bg-green-50 text-green-800'
-                                }`}
-                              >
-                                {stock}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+        {/* Search and Filter Controls */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Filter & Search Products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search products by name or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="plates">Plates</option>
+                  <option value="glasses">Glasses</option>
+                  <option value="cutlery">Cutlery</option>
+                </select>
+                <select
+                  value={stockFilter}
+                  onChange={(e) => setStockFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Stock Levels</option>
+                  <option value="available">Available (&gt;5)</option>
+                  <option value="low">Low Stock (≤5)</option>
+                  <option value="out">Out of Stock</option>
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Products Table */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl">
+                Products ({filteredProducts.length} of {products?.length || 0})
+              </CardTitle>
+              <div className="text-sm text-gray-500">
+                Showing {searchTerm || categoryFilter !== "all" || stockFilter !== "all" ? "filtered" : "all"} products
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!filteredProducts || filteredProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                <p className="text-gray-500">
+                  {searchTerm || categoryFilter !== "all" || stockFilter !== "all" 
+                    ? "Try adjusting your search or filters" 
+                    : "No products have been added yet"}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold">Product</TableHead>
+                      <TableHead className="font-semibold">Category</TableHead>
+                      <TableHead className="font-semibold">Description</TableHead>
+                      <TableHead className="font-semibold">Stock Level</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.map((product) => (
+                      <TableRow key={product.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-500">ID: {product.id}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {product.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-xs">
+                          <div className="text-sm text-gray-600 truncate">
+                            {product.description}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-lg font-semibold">
+                            {product.totalStock}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant="outline"
+                            className={
+                              product.totalStock === 0 ? 'bg-red-50 text-red-700 border-red-200' :
+                              product.totalStock <= 5 ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                              'bg-green-50 text-green-700 border-green-200'
+                            }
+                          >
+                            {product.totalStock === 0 ? 'Out of Stock' :
+                             product.totalStock <= 5 ? 'Low Stock' :
+                             'Available'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
