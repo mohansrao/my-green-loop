@@ -31,9 +31,14 @@ function formatSMSNumber(number: string): string {
   // Remove all non-digits first
   let cleaned = number.replace(/\D/g, "");
 
-  // Add country code if missing
+  // Add country code if missing and it's a 10-digit US number
   if (!cleaned.startsWith("1") && cleaned.length === 10) {
     cleaned = "1" + cleaned;
+  }
+
+  // Validate US phone number format (11 digits starting with 1)
+  if (cleaned.length !== 11 || !cleaned.startsWith("1")) {
+    throw new Error(`Invalid phone number format: ${number}. Must be a valid US phone number.`);
   }
 
   // Ensure single plus sign
@@ -121,9 +126,18 @@ export async function sendOrderNotification(
   for (const recipient of recipients) {
     if (!recipient.number) {
       log(`Skipping ${recipient.type} - no phone number configured`);
+      results.push({ success: false, error: 'No phone number provided', recipient: recipient.type, hint: 'Phone number is required' });
       continue;
     }
-    const formattedToNumber = formatSMSNumber(recipient.number);
+    
+    let formattedToNumber;
+    try {
+      formattedToNumber = formatSMSNumber(recipient.number);
+    } catch (error: any) {
+      log(`Invalid phone number for ${recipient.type}: ${error.message}`, true);
+      results.push({ success: false, error: error.message, recipient: recipient.type, hint: 'Provide a valid US phone number' });
+      continue;
+    }
 
     // SMS message options (same for dev and production)
     const messageOptions = {

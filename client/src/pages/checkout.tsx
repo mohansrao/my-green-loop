@@ -219,32 +219,11 @@ export default function Checkout() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="notificationPreference"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>What's the best way to communicate with you</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="whatsapp" id="whatsapp" />
-                              <Label htmlFor="whatsapp">WhatsApp</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="sms" id="sms" />
-                              <Label htmlFor="sms">Text Message (SMS)</Label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      We'll send you an SMS confirmation when your order is processed.
+                    </p>
+                  </div>
 
 
                   <Button type="submit" className="w-full">
