@@ -9,6 +9,7 @@ import Checkout from "@/pages/checkout";
 import ThankYou from "@/pages/thank-you";
 import InventoryDashboard from "@/pages/admin/inventory-dashboard";
 import NotificationsDashboard from "@/pages/admin/notifications";
+import OrdersPage from "@/pages/admin/orders";
 import Layout from "@/components/layout/layout";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/admin/dashboard" component={InventoryDashboard} />
       <Route path="/admin/notifications" component={NotificationsDashboard} />
+      <Route path="/admin/orders" component={OrdersPage} />
       <Route component={NotFound} />
     </Switch>
   );
