@@ -116,8 +116,10 @@ export async function sendOrderNotification(
   }
 
   const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
+  // Use fallback admin number if primary fails
+  const adminNumber = config.twilio.adminSmsNumber || '+14083981992';
   const recipients = [
-    { number: config.twilio.adminSmsNumber, type: 'admin' as const },
+    { number: adminNumber, type: 'admin' as const },
     ...(customerPhone ? [{ number: customerPhone, type: 'customer' as const }] : [])
   ];
 
@@ -139,11 +141,11 @@ export async function sendOrderNotification(
       continue;
     }
 
-    // SMS message options (same for dev and production)
+    // SMS message options - using simple, compliant message format
     const messageOptions = {
       from: formattedFromNumber,
       to: formattedToNumber,
-      body: `New Order Alert!\n\nOrder #${orderId}\nCustomer: ${customerName}\nTotal: $${totalAmount}\n\nThank you for your business!`,
+      body: `Order #${orderId} confirmed. Customer: ${customerName}. Total: $${totalAmount}. Green Loop Rentals.`,
     };
 
     try {
