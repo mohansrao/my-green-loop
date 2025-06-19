@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Users, DollarSign, Clock } from "lucide-react";
+import AdminNav from "@/components/admin/admin-nav";
 
 interface Order {
   id: number;
@@ -51,8 +52,10 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Order Management</h1>
+    <div>
+      <AdminNav />
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Order Management</h1>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -153,6 +156,7 @@ export default function OrdersPage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

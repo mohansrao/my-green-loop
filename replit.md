@@ -98,15 +98,23 @@ This is a full-stack web application for an eco-friendly dining rental service c
 
 ## Recent Changes
 
-### June 19, 2025 - SMS Notification System
-- Removed WhatsApp option from checkout form - now SMS only
-- Fixed SMS functionality to properly send messages when orders are completed
-- Both admin (+16508614105) and customer receive SMS notifications
-- Verified admin phone number in Twilio account to resolve delivery issues
-- Improved phone number validation and formatting for US numbers
-- Added better error handling for invalid phone numbers
-- Messages include order number, customer name, and total amount
-- Confirmed Twilio account is upgraded (Pay-as-you-go) with sufficient balance
+### June 19, 2025 - Password-Protected Admin Dashboard
+- Created secure admin login system with password "admin123"
+- Built comprehensive admin dashboard with three main sections:
+  - Orders management with real-time stats and order tracking
+  - Notifications page for order alerts
+  - Inventory dashboard for stock management
+- Added admin navigation bar and 24-hour session management
+- Admin access button added to main site navigation
+- Implemented protected routes requiring authentication
+
+### June 19, 2025 - SMS Notification System Analysis
+- SMS messages queue successfully but fail delivery due to error 30034
+- Root cause: Twilio account requires A2P 10DLC registration for US SMS delivery
+- Implemented A2P compliant message formatting for better carrier acceptance
+- Created comprehensive fix guide in TWILIO_SMS_FIX.md with registration steps
+- Admin dashboard provides reliable order tracking alternative until SMS is resolved
+- Estimated fix timeline: 2-3 business days for A2P registration completion
 
 ### June 19, 2025 - Initial setup
 - Core application architecture established
