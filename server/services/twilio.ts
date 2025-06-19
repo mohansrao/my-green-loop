@@ -141,11 +141,16 @@ export async function sendOrderNotification(
       continue;
     }
 
-    // SMS message options - using simple, compliant message format
+    // A2P 10DLC compliant message format - removes promotional language
+    const isAdmin = recipient.type === 'admin';
+    const messageBody = isAdmin 
+      ? `New order ${orderId} from ${customerName}. Amount $${totalAmount}. Green Loop.`
+      : `Hi ${customerName}, your order ${orderId} is confirmed ($${totalAmount}). Thanks! Reply STOP to opt out.`;
+    
     const messageOptions = {
       from: formattedFromNumber,
       to: formattedToNumber,
-      body: `Order #${orderId} confirmed. Customer: ${customerName}. Total: $${totalAmount}. Green Loop Rentals.`,
+      body: messageBody,
     };
 
     try {
