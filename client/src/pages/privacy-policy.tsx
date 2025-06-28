@@ -1,10 +1,8 @@
-import Layout from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PrivacyPolicy() {
   return (
-    <Layout>
-      <div className="container mx-auto py-12 px-4 max-w-4xl">
+    <div className="container mx-auto py-12 px-4 max-w-4xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
           <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
@@ -181,7 +179,6 @@ export default function PrivacyPolicy() {
             </section>
           </CardContent>
         </Card>
-      </div>
-    </Layout>
+    </div>
   );
 }
