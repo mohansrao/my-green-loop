@@ -98,6 +98,23 @@ This is a full-stack web application for an eco-friendly dining rental service c
 
 ## Recent Changes
 
+### June 28, 2025 - Privacy Policy and Legal Compliance Implementation
+- Created comprehensive Privacy Policy page at `/privacy-policy` addressing A2P 10DLC compliance requirements
+- Implemented Terms of Service page at `/terms-of-service` with SMS consent language
+- Added footer navigation links to legal pages for easy accessibility
+- Included TCPA, CAN-SPAM, and GDPR compliance statements
+- Added detailed SMS messaging consent and opt-out procedures
+- Contact information provided: privacy@mygreenloop.com
+- Resolved Twilio A2P 10DLC registration blocker - privacy policy now compliant
+
+### June 19, 2025 - Enhanced Admin Dashboard with Real Data
+- Enhanced admin dashboard with comprehensive statistics and real data calculations
+- Added search functionality across orders, customers, and inventory
+- Implemented filtering systems for order status (pending, confirmed, completed) and date ranges
+- Built inventory management with product search, category filters, and stock level monitoring
+- Created color-coded statistics cards with hover effects and professional presentation
+- Added low-stock alerts and inventory tracking capabilities
+
 ### June 19, 2025 - Password-Protected Admin Dashboard
 - Created secure admin login system with password "admin123"
 - Built comprehensive admin dashboard with three main sections:
@@ -114,7 +131,6 @@ This is a full-stack web application for an eco-friendly dining rental service c
 - Implemented A2P compliant message formatting for better carrier acceptance
 - Created comprehensive fix guide in TWILIO_SMS_FIX.md with registration steps
 - Admin dashboard provides reliable order tracking alternative until SMS is resolved
-- Estimated fix timeline: 2-3 business days for A2P registration completion
 
 ### June 19, 2025 - Initial setup
 - Core application architecture established
