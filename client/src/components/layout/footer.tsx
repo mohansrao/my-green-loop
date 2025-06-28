@@ -17,7 +17,7 @@ export default function Footer() {
               Terms of Service
             </Link>
             <span className="text-gray-400">|</span>
-            <span className="text-gray-600">Contact: privacy@mygreenloop.com</span>
+            <span className="text-gray-600">Contact: wolfetechnologies8@gmail.com</span>
           </div>
         </div>
       </div>

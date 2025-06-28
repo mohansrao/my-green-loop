@@ -160,9 +160,7 @@ export default function PrivacyPolicy() {
                 <p>If you have questions about this privacy policy or our privacy practices, please contact us:</p>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p><strong>My Green Loop</strong></p>
-                  <p>Email: privacy@mygreenloop.com</p>
-                  <p>Phone: +1 (555) 123-4567</p>
-                  <p>Address: 123 Eco Street, Green City, GC 12345</p>
+                  <p>Email: wolfetechnologies8@gmail.com</p>
                 </div>
               </div>
             </section>
