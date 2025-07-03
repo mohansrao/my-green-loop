@@ -1,8 +1,8 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { products, rentals, rentalItems, inventoryDates } from "@db/schema";
-import { eq, and, between, sql, inArray } from "drizzle-orm";
+import { products, rentals, rentalItems, inventoryDates, feedback } from "@db/schema";
+import { eq, and, between, sql, inArray, desc } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
@@ -410,6 +410,228 @@ export function registerRoutes(app: Express): Server {
       } else {
         res.status(500).json({ message: "Error creating rental" });
       }
+    }
+  });
+
+  /**
+   * Submit customer feedback
+   * @route POST /api/feedback
+   * @param {Object} req.body - Feedback data
+   * @returns {Object} Created feedback record
+   */
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const {
+        customerName,
+        rentalDate,
+        cityOfUse,
+        imageUrls,
+        likelihoodToRentAgain,
+        likelihoodToRecommend,
+        orderingExperience,
+        suggestions,
+        platesUsed,
+        glassesUsed,
+        spoonsUsed,
+        marketingConsent
+      } = req.body;
+
+      // Validate required fields
+      if (!rentalDate || !cityOfUse || !likelihoodToRentAgain || !likelihoodToRecommend || !orderingExperience) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Validate rating values (1-5)
+      const ratings = [likelihoodToRentAgain, likelihoodToRecommend, orderingExperience];
+      if (ratings.some(rating => rating < 1 || rating > 5)) {
+        return res.status(400).json({ message: "Ratings must be between 1 and 5" });
+      }
+
+      const [newFeedback] = await db.insert(feedback).values({
+        customerName: customerName || null,
+        rentalDate: new Date(rentalDate),
+        cityOfUse,
+        imageUrls: imageUrls ? JSON.stringify(imageUrls) : null,
+        likelihoodToRentAgain,
+        likelihoodToRecommend,
+        orderingExperience,
+        suggestions: suggestions || null,
+        platesUsed: platesUsed || null,
+        glassesUsed: glassesUsed || null,
+        spoonsUsed: spoonsUsed || null,
+        marketingConsent: marketingConsent || false,
+        isVisible: false, // Admin needs to approve
+        createdAt: new Date()
+      }).returning();
+
+      res.status(201).json(newFeedback);
+    } catch (error) {
+      console.error('Error creating feedback:', error);
+      res.status(500).json({ message: "Error submitting feedback" });
+    }
+  });
+
+  /**
+   * Get all feedback for admin review
+   * @route GET /api/feedback
+   * @returns {Object[]} List of all feedback with visibility control
+   */
+  app.get("/api/feedback", async (_req, res) => {
+    try {
+      const allFeedback = await db.query.feedback.findMany({
+        orderBy: desc(feedback.createdAt)
+      });
+
+      // Parse image URLs for each feedback
+      const processedFeedback = allFeedback.map(fb => ({
+        ...fb,
+        imageUrls: fb.imageUrls ? JSON.parse(fb.imageUrls) : []
+      }));
+
+      res.json(processedFeedback);
+    } catch (error) {
+      console.error('Error fetching feedback:', error);
+      res.status(500).json({ message: "Error fetching feedback" });
+    }
+  });
+
+  /**
+   * Get public feedback (only visible ones)
+   * @route GET /api/feedback/public
+   * @returns {Object[]} List of approved feedback for public display
+   */
+  app.get("/api/feedback/public", async (_req, res) => {
+    try {
+      const publicFeedback = await db.query.feedback.findMany({
+        where: eq(feedback.isVisible, true),
+        orderBy: desc(feedback.createdAt)
+      });
+
+      // Parse image URLs and filter out sensitive data
+      const processedFeedback = publicFeedback.map(fb => ({
+        id: fb.id,
+        customerName: fb.customerName,
+        rentalDate: fb.rentalDate,
+        cityOfUse: fb.cityOfUse,
+        imageUrls: fb.imageUrls ? JSON.parse(fb.imageUrls) : [],
+        likelihoodToRentAgain: fb.likelihoodToRentAgain,
+        likelihoodToRecommend: fb.likelihoodToRecommend,
+        orderingExperience: fb.orderingExperience,
+        suggestions: fb.suggestions,
+        createdAt: fb.createdAt
+      }));
+
+      res.json(processedFeedback);
+    } catch (error) {
+      console.error('Error fetching public feedback:', error);
+      res.status(500).json({ message: "Error fetching public feedback" });
+    }
+  });
+
+  /**
+   * Update feedback visibility (admin only)
+   * @route PATCH /api/feedback/:id/visibility
+   * @param {boolean} req.body.isVisible - Whether feedback should be public
+   * @returns {Object} Updated feedback record
+   */
+  app.patch("/api/feedback/:id/visibility", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isVisible } = req.body;
+
+      if (typeof isVisible !== 'boolean') {
+        return res.status(400).json({ message: "isVisible must be a boolean" });
+      }
+
+      const [updatedFeedback] = await db
+        .update(feedback)
+        .set({ isVisible })
+        .where(eq(feedback.id, parseInt(id)))
+        .returning();
+
+      if (!updatedFeedback) {
+        return res.status(404).json({ message: "Feedback not found" });
+      }
+
+      res.json(updatedFeedback);
+    } catch (error) {
+      console.error('Error updating feedback visibility:', error);
+      res.status(500).json({ message: "Error updating feedback visibility" });
+    }
+  });
+
+  /**
+   * Get usage analytics from feedback data
+   * @route GET /api/feedback/analytics
+   * @returns {Object} Analytics data with totals and year-to-date metrics
+   */
+  app.get("/api/feedback/analytics", async (_req, res) => {
+    try {
+      const currentYear = new Date().getFullYear();
+      const yearStart = new Date(currentYear, 0, 1);
+
+      // Get all feedback with usage data
+      const allFeedback = await db.query.feedback.findMany({
+        where: sql`(plates_used IS NOT NULL OR glasses_used IS NOT NULL OR spoons_used IS NOT NULL)`
+      });
+
+      // Get year-to-date feedback
+      const ytdFeedback = await db.query.feedback.findMany({
+        where: and(
+          sql`(plates_used IS NOT NULL OR glasses_used IS NOT NULL OR spoons_used IS NOT NULL)`,
+          sql`created_at >= ${yearStart}`
+        )
+      });
+
+      // Calculate totals
+      const totalStats = allFeedback.reduce((acc, fb) => {
+        acc.plates += fb.platesUsed || 0;
+        acc.glasses += fb.glassesUsed || 0;
+        acc.spoons += fb.spoonsUsed || 0;
+        acc.events += 1;
+        return acc;
+      }, { plates: 0, glasses: 0, spoons: 0, events: 0 });
+
+      // Calculate year-to-date stats
+      const ytdStats = ytdFeedback.reduce((acc, fb) => {
+        acc.plates += fb.platesUsed || 0;
+        acc.glasses += fb.glassesUsed || 0;
+        acc.spoons += fb.spoonsUsed || 0;
+        acc.events += 1;
+        return acc;
+      }, { plates: 0, glasses: 0, spoons: 0, events: 0 });
+
+      // Calculate average ratings
+      const ratingsData = await db.query.feedback.findMany({
+        where: sql`likelihood_to_rent_again IS NOT NULL`
+      });
+
+      const avgRatings = ratingsData.reduce((acc, fb) => {
+        acc.rentAgain += fb.likelihoodToRentAgain;
+        acc.recommend += fb.likelihoodToRecommend;
+        acc.ordering += fb.orderingExperience;
+        acc.count += 1;
+        return acc;
+      }, { rentAgain: 0, recommend: 0, ordering: 0, count: 0 });
+
+      const analytics = {
+        usage: {
+          total: totalStats,
+          yearToDate: ytdStats
+        },
+        averageRatings: avgRatings.count > 0 ? {
+          likelihoodToRentAgain: (avgRatings.rentAgain / avgRatings.count).toFixed(1),
+          likelihoodToRecommend: (avgRatings.recommend / avgRatings.count).toFixed(1),
+          orderingExperience: (avgRatings.ordering / avgRatings.count).toFixed(1)
+        } : null,
+        totalFeedbackCount: ratingsData.length,
+        year: currentYear
+      };
+
+      res.json(analytics);
+    } catch (error) {
+      console.error('Error fetching feedback analytics:', error);
+      res.status(500).json({ message: "Error fetching analytics" });
     }
   });
 

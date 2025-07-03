@@ -44,6 +44,24 @@ export const rentalItems = pgTable("rental_items", {
   quantity: integer("quantity").notNull(),
 });
 
+export const feedback = pgTable("feedback", {
+  id: serial("id").primaryKey(),
+  customerName: text("customer_name"),
+  rentalDate: date("rental_date").notNull(),
+  cityOfUse: text("city_of_use").notNull(),
+  imageUrls: text("image_urls"), // JSON array of image URLs
+  likelihoodToRentAgain: integer("likelihood_to_rent_again").notNull(), // 1-5 scale
+  likelihoodToRecommend: integer("likelihood_to_recommend").notNull(), // 1-5 scale
+  orderingExperience: integer("ordering_experience").notNull(), // 1-5 scale
+  suggestions: text("suggestions"),
+  platesUsed: integer("plates_used"),
+  glassesUsed: integer("glasses_used"),
+  spoonsUsed: integer("spoons_used"),
+  marketingConsent: boolean("marketing_consent").default(false),
+  isVisible: boolean("is_visible").default(false), // Admin control
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const productRelations = relations(products, ({ many }) => ({
   rentalItems: many(rentalItems),
   inventoryDates: many(inventoryDates),
@@ -71,7 +89,16 @@ export const inventoryDatesRelations = relations(inventoryDates, ({ one }) => ({
   }),
 }));
 
+export const feedbackRelations = relations(feedback, ({ one }) => ({
+  // Add relations if needed in the future
+}));
+
 export type Product = typeof products.$inferSelect;
 export type Rental = typeof rentals.$inferSelect;
 export type RentalItem = typeof rentalItems.$inferSelect;
 export type InventoryDate = typeof inventoryDates.$inferSelect;
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = typeof feedback.$inferInsert;
+
+export const insertFeedbackSchema = createInsertSchema(feedback);
+export const selectFeedbackSchema = createSelectSchema(feedback);

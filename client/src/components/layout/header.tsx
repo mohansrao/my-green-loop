@@ -29,6 +29,11 @@ export default function Header() {
                   Catalog
                 </a>
               </Link>
+              <Link href="/feedback">
+                <a className="text-sm font-medium text-gray-700 hover:text-green-700">
+                  Feedback
+                </a>
+              </Link>
               <Button asChild variant="outline">
                 <Link href="/catalog">Rent Now</Link>
               </Button>
