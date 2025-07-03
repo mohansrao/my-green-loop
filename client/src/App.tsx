@@ -8,6 +8,7 @@ import Catalog from "@/pages/catalog";
 import Checkout from "@/pages/checkout";
 import ThankYou from "@/pages/thank-you";
 import Feedback from "@/pages/feedback";
+import Reviews from "@/pages/reviews";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import InventoryDashboard from "@/pages/admin/inventory-dashboard";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/feedback" component={Feedback} />
+      <Route path="/reviews" component={Reviews} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/admin/login" component={AdminLogin} />

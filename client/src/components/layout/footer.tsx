@@ -9,6 +9,10 @@ export default function Footer() {
             © {new Date().getFullYear()} My Green Loop. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center md:justify-end items-center space-x-6 text-sm">
+            <Link href="/reviews" className="text-gray-600 hover:text-green-600 transition-colors">
+              Customer Reviews
+            </Link>
+            <span className="text-gray-400">|</span>
             <Link href="/feedback" className="text-gray-600 hover:text-green-600 transition-colors">
               Share Feedback
             </Link>

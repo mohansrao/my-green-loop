@@ -29,6 +29,11 @@ export default function Header() {
                   Catalog
                 </a>
               </Link>
+              <Link href="/reviews">
+                <a className="text-sm font-medium text-gray-700 hover:text-green-700">
+                  Reviews
+                </a>
+              </Link>
               <Link href="/feedback">
                 <a className="text-sm font-medium text-gray-700 hover:text-green-700">
                   Feedback
