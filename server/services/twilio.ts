@@ -66,28 +66,34 @@ function getTwilioErrorHint(error: any): string {
 }
 
 /**
- * Sends an SMS notification for a new order
- * Works in both development and production without templates
+ * Sends an SMS notification for a new order using approved Twilio message templates
+ * Uses specific format approved by Twilio for A2P 10DLC compliance
  *
  * @param {number} orderId - The unique identifier for the order
  * @param {string} customerName - The name of the customer who placed the order
  * @param {number} totalAmount - The total amount of the order
  * @param {string} customerPhone - Customer's phone number
+ * @param {Object} orderDetails - Additional order details for message formatting
  * @returns {Promise<Object>} - Result object containing success status and additional details
  *
  * @example
- * const result = await sendOrderNotification(123, "John Doe", 99.99, "+15551234567");
+ * const result = await sendOrderNotification(123, "John Doe", 99.99, "+15551234567", orderDetails);
  * if (!result.success) {
  *   console.error(result.hint);
  * }
  */
-// SMS doesn't require sandbox setup - removed addToSandbox function
 
 export async function sendOrderNotification(
   orderId: number,
   customerName: string,
   totalAmount: number,
-  customerPhone?: string
+  customerPhone?: string,
+  orderDetails?: {
+    startDate: string;
+    endDate: string;
+    items: Array<{ name: string; quantity: number }>;
+    totalItems: number;
+  }
 ) {
   const log = (message: string, isError = false) => {
     const prefix = `[Twilio][Order #${orderId}]`;
@@ -141,11 +147,20 @@ export async function sendOrderNotification(
       continue;
     }
 
-    // A2P 10DLC compliant message format - removes promotional language
+    // A2P 10DLC compliant message format using approved templates
     const isAdmin = recipient.type === 'admin';
-    const messageBody = isAdmin 
-      ? `New order ${orderId} from ${customerName}. Amount $${totalAmount}. Green Loop.`
-      : `Hi ${customerName}, your order ${orderId} is confirmed ($${totalAmount}). Thanks! Reply STOP to opt out.`;
+    
+    let messageBody = '';
+    
+    if (isAdmin) {
+      // Admin message format (Sample #2)
+      const itemsText = orderDetails?.items.map(item => `${item.name} (x${item.quantity})`).join(' ') || 'Items not specified';
+      messageBody = `New rental order received: Order Summary Name ${customerName} Phone ${customerPhone || 'Not provided'} Rental Period From: ${orderDetails?.startDate || 'Not specified'} To: ${orderDetails?.endDate || 'Not specified'} Items (${orderDetails?.totalItems || 0}) ${itemsText} Total $${totalAmount.toFixed(2)}`;
+    } else {
+      // Customer message format (Sample #1)
+      const itemsText = orderDetails?.items.map(item => `${item.name} (x${item.quantity})`).join(' ') || 'Items not specified';
+      messageBody = `Your rental order has been received Rental Period From: ${orderDetails?.startDate || 'Not specified'} To: ${orderDetails?.endDate || 'Not specified'} Items (${orderDetails?.totalItems || 0}) ${itemsText} Total $${totalAmount.toFixed(2)}`;
+    }
     
     const messageOptions = {
       from: formattedFromNumber,

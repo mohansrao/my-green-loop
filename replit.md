@@ -98,6 +98,14 @@ This is a full-stack web application for an eco-friendly dining rental service c
 
 ## Recent Changes
 
+### July 10, 2025 - SMS Notification System Updated with Approved Templates
+- Updated SMS notification system to use Twilio-approved message templates
+- Implemented customer message format: "Your rental order has been received Rental Period From: [date] To: [date] Items ([count]) [item details] Total $[amount]"
+- Implemented admin message format: "New rental order received: Order Summary Name [name] Phone [phone] Rental Period From: [date] To: [date] Items ([count]) [item details] Total $[amount]"
+- Added comprehensive order details to SMS notifications including rental dates, item quantities, and total amount
+- SMS messages now comply with A2P 10DLC requirements and have been approved by Twilio
+- Enhanced notification system to handle detailed product information and formatting
+
 ### July 3, 2025 - Comprehensive Customer Feedback System Implementation
 - Built complete feedback collection system with customer form at `/feedback`
 - Added database schema for feedback with rating scales, usage tracking, and marketing consent

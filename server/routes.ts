@@ -370,12 +370,27 @@ export function registerRoutes(app: Express): Server {
           }
         }
 
+        // Prepare order details for notification
+        const orderDetails = {
+          startDate: format(start, 'MMMM do, yyyy'),
+          endDate: format(end, 'MMMM do, yyyy'),
+          items: items.map(item => {
+            const product = productsData.find(p => p.id === item.productId);
+            return {
+              name: product?.name || 'Unknown Product',
+              quantity: item.quantity
+            };
+          }),
+          totalItems: items.reduce((sum, item) => sum + item.quantity, 0)
+        };
+
         // Send notifications after successful rental creation
         const notificationResult = await sendOrderNotification(
           rental.id, 
           rental.customerName, 
           Number(rental.totalAmount),
-          phoneNumber // Pass customer phone number
+          phoneNumber, // Pass customer phone number
+          orderDetails // Pass order details for message formatting
         );
 
         // Import and send email notifications as backup
