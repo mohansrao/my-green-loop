@@ -184,6 +184,20 @@ export async function sendOrderNotification(
         ? 'Message queued for delivery (will be delivered within minutes)' 
         : `Message ${message.status}`;
       log(`${statusMessage} (SID: ${message.sid})`);
+      
+      // Add a delayed status check for better debugging
+      setTimeout(async () => {
+        try {
+          const updatedMessage = await client.messages(message.sid).fetch();
+          log(`Status update for ${message.sid}: ${updatedMessage.status} - ${updatedMessage.errorMessage || 'No error'}`);
+          if (updatedMessage.status === 'failed' || updatedMessage.status === 'undelivered') {
+            log(`Delivery failed for ${message.sid}: ${updatedMessage.errorMessage || 'Unknown error'}`, true);
+          }
+        } catch (error) {
+          log(`Could not fetch status for ${message.sid}: ${error}`, true);
+        }
+      }, 30000); // Check status after 30 seconds
+      
       results.push({ 
         success: true, 
         sid: message.sid, 
