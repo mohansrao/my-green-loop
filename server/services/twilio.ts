@@ -12,6 +12,9 @@ const config = {
     authToken: process.env.TWILIO_AUTH_TOKEN,
     smsNumber: process.env.TWILIO_SMS_NUMBER || process.env.TWILIO_PHONE_NUMBER,
     adminSmsNumber: process.env.TWILIO_ADMIN_SMS_NUMBER || process.env.DEV_ADMIN_SMS_NUMBER,
+    // A2P 10DLC Campaign Configuration (required for delivery)
+    brandId: process.env.TWILIO_BRAND_ID,
+    campaignId: process.env.TWILIO_CAMPAIGN_ID,
   }
 };
 
@@ -166,6 +169,8 @@ export async function sendOrderNotification(
       from: formattedFromNumber,
       to: formattedToNumber,
       body: messageBody,
+      // Include campaign ID if available (required for A2P 10DLC compliance)
+      ...(config.twilio.campaignId && { messagingServiceSid: config.twilio.campaignId }),
     };
 
     try {
