@@ -1,0 +1,19 @@
+Frontend Layer
+
+I chose React 18 with TypeScript for type safety and component-based development. Lightweight routing was handled with Wouter, and Radix UI provided accessible, reusable components. Styling relied on Tailwind CSS for efficiency, while TanStack Query and React Hook Form with Zod validation ensured smooth state management and form reliability. The architecture focused on reusability, responsiveness, and real-time inventory checking, with pages for home, product catalog, checkout, admin dashboard, and feedback collection. Custom hooks handled mobile detection, notifications, and toast messages.
+
+Backend Layer
+
+The backend was built with Node.js and Express.js, also in TypeScript. I implemented a RESTful API with session-based authentication for admin access, error handling, and logging. Core services included product management, rental processing, SMS notifications via Twilio, and feedback moderation. Real-time inventory calculations and admin authentication were integrated seamlessly, ensuring the platform operated reliably under multiple simultaneous operations.
+
+Database Layer
+
+PostgreSQL (hosted on Neon) managed all relational data. Using Drizzle ORM, I created a type-safe schema for products, rentals, rental items, inventory dates, and feedback. Inventory automatically adjusts based on rental dates, and an admin approval system controls visibility of public feedback. Proper foreign keys and relational integrity maintain consistency across all operations.
+
+Hosting & Deployment
+
+The development environment was Replit with Node.js 20, while production targets Google Cloud Run. The deployment process is streamlined with a single-command build, environment-specific configurations, and comprehensive logging. Twilio integration follows A2P 10DLC compliance for US messaging, ensuring notifications are reliable and legal. Hot reload via Vite and esbuild bundling allowed for rapid development iterations.
+
+The main challenge throughout was balancing simplicity with functionality. Some initially obvious features added unnecessary complexity, so I had to constantly reevaluate decisions from a user perspective. Beyond the code, I considered the broader vision: making sustainability actionable without it feeling like a burden. That perspective guided every technical and design decision.
+
+Finishing MyGreenLoop was rewarding because it wasn't just about writing code—it was about problem-solving, design thinking, and turning an abstract idea into something tangible. The platform is now fully functional, with real-time inventory management, SMS notifications, customer feedback collection, and a complete admin dashboard, ready for production deployment. The project reinforced the importance of iteration, user perspective, and ownership in building a product from concept to reality.
