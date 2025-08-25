@@ -75,26 +75,33 @@ This is a full-stack web application for an eco-friendly dining rental service c
 - **esbuild**: Fast JavaScript bundler for production
 - **vite**: Frontend build tool and dev server
 
-## Deployment Strategy
+## Hosting & Deployment Strategy
 
-### Development Environment
-- **Platform**: Replit with Node.js 20 runtime
-- **Database**: PostgreSQL 16 module
-- **Port Configuration**: Development server on port 5000
-- **Hot Reload**: Vite HMR with Express middleware integration
+### Replit Platform Integration
+- **Platform**: Complete hosting solution on Replit with Node.js 20 runtime
+- **Development Environment**: Integrated development with hot reload via Vite HMR
+- **Production Deployment**: Replit Deployments for seamless production hosting
+- **Database**: Built-in PostgreSQL database with Replit's managed service
+- **SSL & Domains**: Automatic SSL certificates and .replit.app domain with custom domain support
 
-### Production Deployment
-- **Target**: Google Cloud Run
-- **Build Process**: 
-  1. Frontend build with Vite (outputs to dist/public)
-  2. Backend build with esbuild (outputs to dist/index.js)
-- **Environment**: NODE_ENV=production
-- **Database**: Neon serverless PostgreSQL with connection pooling
+### Application Architecture
+- **Port Configuration**: Frontend and backend served together on port 5000
+- **Build Process**: Vite handles frontend bundling with Express serving static assets
+- **Session Management**: PostgreSQL-backed session storage integrated with Replit's database
+- **Environment Variables**: Secure secret management through Replit's environment system
+
+### Deployment Features
+- **Zero-Configuration Deployment**: Single-click deployment from development to production
+- **Automatic Scaling**: Replit handles traffic scaling and resource management
+- **Built-in Monitoring**: Integrated logging and error tracking through Replit's dashboard
+- **Hot Reload Development**: Instant code changes with Vite HMR integration
+- **Database Rollbacks**: Checkpoint-based rollback system for code and database state
 
 ### Configuration Management
 - **Environment Variables**: Comprehensive logging of secret variables on startup
 - **Twilio Integration**: Environment-specific phone numbers and API credentials
-- **Database**: Automatic connection string validation and pool management
+- **Database**: Automatic connection string validation and connection pooling
+- **Security**: HTTPS-only production environment with secure session handling
 
 ## Recent Changes
 
