@@ -14,9 +14,10 @@ module.exports = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/client/src/$1',
         '^@db/(.*)$': '<rootDir>/db/$1',
+        '^@db$': '<rootDir>/db/index.ts',
         '^(\\.{1,2}/.*)\\.js$': '$1'
     },
-    testMatch: ['**/server/**/*.test.ts'], // Only run server tests for now
+    testMatch: ['**/server/**/*.test.ts'],
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
 };

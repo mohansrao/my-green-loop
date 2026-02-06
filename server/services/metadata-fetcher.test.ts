@@ -1,5 +1,6 @@
 import { fetchUrlMetadata, extractDomain } from './metadata-fetcher';
 import fetch from 'node-fetch';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
 // Mock node-fetch
 jest.mock('node-fetch');

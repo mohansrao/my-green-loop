@@ -2,6 +2,7 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import { registerRoutes } from '../routes';
 import { db } from '../../db'; // We will mock this
+import { jest, describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
 
 // Mock the database and metadata fetcher
 jest.mock('../../db', () => ({
