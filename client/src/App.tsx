@@ -30,8 +30,16 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/resources" component={Resources} />
       <Route path="/bookmarks" component={MyBookmarks} />
-      <Route path="/admin/resources" component={AdminContentList} />
-      <Route path="/admin/resources/add" component={AdminAddContent} />
+      <Route path="/admin/resources">
+        <ProtectedAdminRoute>
+          <AdminContentList />
+        </ProtectedAdminRoute>
+      </Route>
+      <Route path="/admin/resources/add">
+        <ProtectedAdminRoute>
+          <AdminAddContent />
+        </ProtectedAdminRoute>
+      </Route>
       {/* ... existing routes ... */}
       <Route path="/catalog" component={Catalog} />
       <Route path="/checkout" component={Checkout} />
