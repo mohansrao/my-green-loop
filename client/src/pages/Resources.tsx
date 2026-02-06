@@ -5,6 +5,7 @@ import { useLocation } from 'wouter';
 import ContentCard from '@/components/ContentCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
     Search,
     FilterX,
@@ -20,6 +21,7 @@ import {
     Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORY_ICONS: Record<string, any> = {
     'leaf': Leaf,
@@ -250,14 +252,4 @@ export default function Resources() {
     );
 }
 
-// Re-using Shadcn Badge locally to avoid imports if not already available in a clean way
-function Badge({ children, className, style }: any) {
-    return (
-        <div
-            className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", className)}
-            style={style}
-        >
-            {children}
-        </div>
-    );
-}
+// Local Badge function removed as it is now imported from @/components/ui/badge
