@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import ContentCard from '@/components/ContentCard';
@@ -14,7 +15,9 @@ import {
     ShoppingBag,
     Lightbulb,
     Sparkles,
-    ArrowRight
+    ArrowRight,
+    Globe,
+    Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
