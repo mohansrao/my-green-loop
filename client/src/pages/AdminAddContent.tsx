@@ -101,6 +101,7 @@ export default function AdminAddContent() {
 
         createContentMutation.mutate({
             ...metadata,
+            contentType: metadata.type || 'article',
             categoryId: selectedCategory,
             isFeatured,
         });
