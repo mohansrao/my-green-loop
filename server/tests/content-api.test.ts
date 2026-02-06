@@ -3,6 +3,7 @@ import express, { Express } from 'express';
 import { registerRoutes } from '../routes';
 import { db } from '../../db'; // We will mock this
 import { jest, describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
+import http from 'http';
 
 // Mock the database and metadata fetcher
 jest.mock('../../db', () => ({
@@ -43,7 +44,7 @@ describe('Content Hub API', () => {
         app.use(express.json());
         app.use(express.urlencoded({ extended: false }));
         // Mock server object for websocket setup (not needed for these tests but required by signature)
-        const server = require('http').createServer(app);
+        const server = http.createServer(app);
         registerRoutes(app, server);
     });
 

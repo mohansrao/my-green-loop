@@ -6,7 +6,15 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 jest.mock('node-fetch');
 const mockedFetch = fetch as jest.MockedFunction<typeof fetch>;
 
-const { Response } = jest.requireActual('node-fetch');
+// Helper to create a mock response without importing valid Response class
+const createMockResponse = (body: string, status = 200) => ({
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 200 ? 'OK' : 'Error',
+    text: jest.fn().mockResolvedValue(body),
+    json: jest.fn().mockResolvedValue(JSON.parse(body || '{}')),
+    headers: new Map(),
+} as any);
 
 describe('Metadata Fetcher Service', () => {
     beforeEach(() => {
@@ -44,7 +52,7 @@ describe('Metadata Fetcher Service', () => {
             <html><title>Awesome Video - YouTube</title></html>
         `;
 
-        mockedFetch.mockResolvedValue(new Response(mockHtml, { status: 200 }));
+        mockedFetch.mockResolvedValue(createMockResponse(mockHtml));
 
         const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
         const metadata = await fetchUrlMetadata(url);
@@ -64,7 +72,7 @@ describe('Metadata Fetcher Service', () => {
             </html>
         `;
 
-        mockedFetch.mockResolvedValue(new Response(mockHtml, { status: 200 }));
+        mockedFetch.mockResolvedValue(createMockResponse(mockHtml));
 
         const metadata = await fetchUrlMetadata('https://example.com/fallback');
 
