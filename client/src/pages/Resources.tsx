@@ -188,7 +188,6 @@ export default function Resources() {
                                         </h2>
                                         <div className="flex items-center gap-4 text-green-100/70 text-sm">
                                             <span className="flex items-center gap-1"><Globe className="h-4 w-4" /> {featured.source}</span>
-                                            <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {featured.readingTime} min read</span>
                                         </div>
                                         <Button className="mt-6 bg-white text-green-950 hover:bg-green-50 rounded-full px-8 h-12 font-bold group/btn">
                                             Read Story

@@ -148,10 +148,6 @@ export default function ContentCard({ item }: ContentCardProps) {
                             <Globe className="h-3 w-3" />
                             <span>{item.source}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="h-3 w-3" />
-                            <span>{item.readingTime || 5} {item.contentType === 'video' ? 'min watch' : 'min read'}</span>
-                        </div>
                     </div>
 
                     <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-green-800 transition-colors mb-2">
