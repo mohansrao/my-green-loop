@@ -6,7 +6,7 @@ import {
     CardFooter
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Clock, Globe, Share2, Bookmark, Check } from 'lucide-react';
+import { ExternalLink, Clock, Globe, Share2, Bookmark, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -102,25 +102,35 @@ export default function ContentCard({ item }: ContentCardProps) {
             transition={{ duration: 0.4 }}
             whileHover={{ y: -5 }}
         >
-            <Card className="group flex flex-col h-full overflow-hidden border-none shadow-none bg-transparent hover:bg-white/50 transition-all duration-300">
+            <Card className="group flex flex-col h-full overflow-hidden border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
                 {/* Thumbnail */}
                 <div
-                    className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted cursor-pointer"
+                    className="relative aspect-video w-full overflow-hidden bg-muted cursor-pointer"
                     onClick={() => window.open(item.url, '_blank')}
                 >
-                    <img
-                        src={item.thumbnailUrl}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e: any) => e.target.src = 'https://placehold.co/400x225?text=Sustainable+Living'}
-                    />
+                    {item.thumbnailUrl ? (
+                        <img
+                            src={item.thumbnailUrl}
+                            alt={item.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            onError={(e: any) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=800';
+                            }}
+                        />
+                    ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-green-50 text-green-200">
+                            <Globe className="h-12 w-12" />
+                        </div>
+                    )}
+
                     <div className="absolute top-3 left-3 flex gap-2">
-                        <Badge className="bg-black/80 text-white backdrop-blur-md border-none capitalize">
+                        <Badge className="bg-black/80 text-white backdrop-blur-md border-none capitalize text-[10px] h-5">
                             {item.contentType}
                         </Badge>
                         {category && (
                             <Badge
-                                className="border-none text-white shadow-sm font-medium"
+                                className="border-none text-white shadow-sm font-medium text-[10px] h-5"
                                 style={{ backgroundColor: category.color || '#2d5016' }}
                             >
                                 {category.name}
@@ -130,38 +140,38 @@ export default function ContentCard({ item }: ContentCardProps) {
                 </div>
 
                 <CardContent
-                    className="flex-1 p-4 pb-2 cursor-pointer"
+                    className="flex-1 p-5 pb-2 cursor-pointer"
                     onClick={() => window.open(item.url, '_blank')}
                 >
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                        <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-4 text-[11px] text-muted-foreground mb-3 font-medium">
+                        <div className="flex items-center gap-1.5">
                             <Globe className="h-3 w-3" />
                             <span>{item.source}</span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                             <Clock className="h-3 w-3" />
-                            <span>{item.readingTime} min</span>
+                            <span>{item.readingTime || 5} min read</span>
                         </div>
                     </div>
 
-                    <h3 className="font-bold text-lg leading-snug line-clamp-2 group-hover:text-green-800 transition-colors">
+                    <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-green-800 transition-colors mb-2">
                         {item.title}
                     </h3>
 
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                    <p className="text-sm text-muted-foreground/80 line-clamp-3 leading-relaxed">
                         {item.description}
                     </p>
                 </CardContent>
 
-                <CardFooter className="p-4 pt-0 mt-auto flex justify-between items-center">
+                <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="rounded-full border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800"
+                        className="rounded-full -ml-2 text-green-700 hover:bg-green-50 hover:text-green-800 font-bold text-xs"
                         onClick={() => window.open(item.url, '_blank')}
                     >
-                        View Resource
-                        <ExternalLink className="ml-2 h-3.3 w-3.5" />
+                        Read Story
+                        <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
 
                     <div className="flex gap-1">

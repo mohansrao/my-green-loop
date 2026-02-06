@@ -161,7 +161,7 @@ export default function AdminAddContent() {
                                     <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {categories?.map((cat: any) => (
+                                    {Array.isArray(categories) && categories.map((cat: any) => (
                                         <SelectItem key={cat.id} value={cat.id.toString()}>
                                             {cat.name}
                                         </SelectItem>
@@ -195,9 +195,9 @@ export default function AdminAddContent() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {metadata.image && (
+                            {metadata.thumbnailUrl && (
                                 <div className="aspect-video w-full overflow-hidden rounded-md border bg-muted">
-                                    <img src={metadata.image} alt="Preview" className="h-full w-full object-cover" />
+                                    <img src={metadata.thumbnailUrl} alt="Preview" className="h-full w-full object-cover" />
                                 </div>
                             )}
 

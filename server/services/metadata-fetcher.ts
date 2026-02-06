@@ -30,16 +30,31 @@ export async function fetchUrlMetadata(url: string): Promise<MetadataResult> {
         const $ = cheerio.load(html);
 
         // Extract Open Graph / Twitter Card metadata
+        let title = $('meta[property="og:title"]').attr('content') ||
+            $('meta[name="twitter:title"]').attr('content') ||
+            $('title').text().trim();
+
+        // Clean title (remove common site suffixes)
+        title = title.replace(/ - YouTube$| \| YouTube$| - Treehugger$| \| Treehugger$/i, '');
+
+        let image = $('meta[property="og:image"]').attr('content') ||
+            $('meta[name="twitter:image"]').attr('content');
+
+        // Logic for YouTube High-Res Thumbnails
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const videoId = extractYouTubeId(url);
+            if (videoId) {
+                image = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            }
+        }
+
         const metadata: MetadataResult = {
-            title: $('meta[property="og:title"]').attr('content') ||
-                $('meta[name="twitter:title"]').attr('content') ||
-                $('title').text().trim(),
+            title,
             description: $('meta[property="og:description"]').attr('content') ||
                 $('meta[name="twitter:description"]').attr('content') ||
                 $('meta[name="description"]').attr('content') ||
                 '',
-            image: $('meta[property="og:image"]').attr('content') ||
-                $('meta[name="twitter:image"]').attr('content'),
+            image,
             type: detectContentType($('meta[property="og:type"]').attr('content') || '', url),
             siteName: $('meta[property="og:site_name"]').attr('content') ||
                 extractDomain(url),
@@ -49,7 +64,6 @@ export async function fetchUrlMetadata(url: string): Promise<MetadataResult> {
         return metadata;
     } catch (error) {
         console.error('Error fetching metadata:', error);
-        // Return empty results rather than throwing, code will handle defaults
         return {
             title: '',
             description: '',
@@ -57,6 +71,12 @@ export async function fetchUrlMetadata(url: string): Promise<MetadataResult> {
             siteName: extractDomain(url)
         };
     }
+}
+
+function extractYouTubeId(url: string): string | null {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
 }
 
 /**
@@ -68,6 +88,7 @@ function detectContentType(ogType: string, url: string): 'article' | 'video' | '
 
     if (lowercaseOg.includes('video') ||
         lowercaseUrl.includes('youtube.com') ||
+        lowercaseUrl.includes('youtu.be') ||
         lowercaseUrl.includes('vimeo.com')) {
         return 'video';
     }

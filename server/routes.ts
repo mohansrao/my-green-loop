@@ -170,6 +170,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         ...metadata,
+        thumbnailUrl: metadata.image, // Map for database consistency
         source: domain,
         url,
       });
