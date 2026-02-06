@@ -8,11 +8,6 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export default defineConfig({
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./client/src/setupTests.ts'],
-  },
   plugins: [react(), runtimeErrorOverlay(), themePlugin()],
   resolve: {
     alias: {
