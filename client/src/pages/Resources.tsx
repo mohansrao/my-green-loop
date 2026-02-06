@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import ContentCard from '@/components/ContentCard';
