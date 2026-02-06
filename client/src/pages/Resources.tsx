@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import ContentCard from '@/components/ContentCard';
@@ -20,7 +21,6 @@ import {
     Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORY_ICONS: Record<string, any> = {
     'leaf': Leaf,
