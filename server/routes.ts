@@ -5,6 +5,9 @@ import {
   products, rentals, rentalItems, inventoryDates, feedback,
   contentItems, contentCategories, contentCategoryMapping, contentTags, contentTagMapping, contentBookmarks
 } from "@db/schema";
+// Note: inArray is used instead of exists for category filtering — see the
+// GET /api/content handler comments for the explanation of why exists() is
+// incompatible with Drizzle's relational query API (db.query.*.findMany)
 import { eq, and, sql, or, desc, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
@@ -36,24 +39,42 @@ export function registerRoutes(app: Express): Server {
     try {
       const { category, type, search, sort = 'recent', page = 1, limit = 20 } = req.query;
 
+      // Start with base condition: only show published content
       const conditions = [eq(contentItems.status, 'published')];
 
+      // Category filter: uses a two-step approach to avoid an incompatibility
+      // between Drizzle's exists() subquery and the relational query API
+      // (db.query.*.findMany). The exists() approach produced invalid SQL
+      // referencing the raw table name "content_items" while the relational
+      // query aliases it as "contentItems", causing a PostgreSQL error:
+      // "invalid reference to FROM-clause entry for table 'content_items'".
+      //
+      // Fix: first query the mapping table for content IDs that belong to
+      // the selected category, then use inArray() to filter the main query.
       if (category) {
+        // Step 1: Get all content IDs associated with the selected category
         const matchingIds = await db
           .select({ contentId: contentCategoryMapping.contentId })
           .from(contentCategoryMapping)
           .where(eq(contentCategoryMapping.categoryId, Number(category)));
         const ids = matchingIds.map(r => r.contentId);
+
+        // If no content is mapped to this category, return early with empty results
         if (ids.length === 0) {
           return res.json({ items: [], page: Number(page), limit: Number(limit) });
         }
+
+        // Step 2: Add an inArray condition so the main query only returns
+        // content items whose IDs match the category mapping results
         conditions.push(inArray(contentItems.id, ids));
       }
 
+      // Optional content type filter (e.g., "article", "video")
       if (type) {
         conditions.push(eq(contentItems.contentType, type as string));
       }
 
+      // Optional search filter: case-insensitive match on title or description
       if (search) {
         conditions.push(or(
           sql`${contentItems.title} ILIKE ${`%${search}%`}`,
@@ -61,6 +82,8 @@ export function registerRoutes(app: Express): Server {
         ));
       }
 
+      // Execute the main query using Drizzle's relational API to include
+      // nested category data via the categoryMappings relation
       const items = await db.query.contentItems.findMany({
         where: and(...conditions),
         with: {
