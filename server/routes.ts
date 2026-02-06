@@ -5,7 +5,7 @@ import {
   products, rentals, rentalItems, inventoryDates, feedback,
   contentItems, contentCategories, contentCategoryMapping, contentTags, contentTagMapping, contentBookmarks
 } from "@db/schema";
-import { eq, and, sql, or, exists, desc } from "drizzle-orm";
+import { eq, and, sql, or, desc, inArray } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
@@ -39,13 +39,15 @@ export function registerRoutes(app: Express): Server {
       const conditions = [eq(contentItems.status, 'published')];
 
       if (category) {
-        conditions.push(exists(
-          db.select().from(contentCategoryMapping)
-            .where(and(
-              eq(contentCategoryMapping.contentId, contentItems.id),
-              eq(contentCategoryMapping.categoryId, Number(category))
-            ))
-        ));
+        const matchingIds = await db
+          .select({ contentId: contentCategoryMapping.contentId })
+          .from(contentCategoryMapping)
+          .where(eq(contentCategoryMapping.categoryId, Number(category)));
+        const ids = matchingIds.map(r => r.contentId);
+        if (ids.length === 0) {
+          return res.json({ items: [], page: Number(page), limit: Number(limit) });
+        }
+        conditions.push(inArray(contentItems.id, ids));
       }
 
       if (type) {
