@@ -19,7 +19,7 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     // Simple password check - in production, this would be server-side
-    if (password === "admin123") {
+    if (password === "nachbaliye") {
       // Store admin session
       localStorage.setItem("adminAuthenticated", "true");
       localStorage.setItem("adminLoginTime", Date.now().toString());
