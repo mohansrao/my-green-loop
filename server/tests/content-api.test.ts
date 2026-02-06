@@ -103,4 +103,29 @@ describe('Content Hub API', () => {
             expect(response.body).toHaveProperty('id', 1);
         });
     });
+
+    describe('GET /api/content', () => {
+        it('should return content items', async () => {
+            (db.query.contentItems.findMany as jest.Mock).mockResolvedValue([
+                { id: 1, title: 'Test Content' }
+            ]);
+
+            const response = await request(app).get('/api/content');
+
+            expect(response.status).toBe(200);
+            expect(response.body.items).toHaveLength(1);
+            expect(db.query.contentItems.findMany).toHaveBeenCalled();
+        });
+
+        it('should accept search and category parameters', async () => {
+            (db.query.contentItems.findMany as jest.Mock).mockResolvedValue([]);
+
+            const response = await request(app)
+                .get('/api/content')
+                .query({ search: 'eco', category: '1' });
+
+            expect(response.status).toBe(200);
+            expect(db.query.contentItems.findMany).toHaveBeenCalled();
+        });
+    });
 });

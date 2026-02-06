@@ -150,7 +150,7 @@ export default function ContentCard({ item }: ContentCardProps) {
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock className="h-3 w-3" />
-                            <span>{item.readingTime || 5} min read</span>
+                            <span>{item.readingTime || 5} {item.contentType === 'video' ? 'min watch' : 'min read'}</span>
                         </div>
                     </div>
 
@@ -170,7 +170,7 @@ export default function ContentCard({ item }: ContentCardProps) {
                         className="rounded-full -ml-2 text-green-700 hover:bg-green-50 hover:text-green-800 font-bold text-xs"
                         onClick={() => window.open(item.url, '_blank')}
                     >
-                        Read Story
+                        {item.contentType === 'video' ? 'Watch Video' : 'Read Story'}
                         <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
 

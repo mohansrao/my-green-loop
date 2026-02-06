@@ -42,8 +42,14 @@ export default function Resources() {
     });
 
     // Fetch content
+    // Fetch content with constructed URL for proper filtering
+    const queryUrl = `/api/content?${new URLSearchParams({
+        ...(selectedCategory ? { category: selectedCategory.toString() } : {}),
+        ...(search ? { search } : {})
+    }).toString()}`;
+
     const { data: contentData, isLoading } = useQuery<any>({
-        queryKey: ['/api/content', { category: selectedCategory, search }],
+        queryKey: [queryUrl],
     });
 
     // Fetch featured content for the hero section

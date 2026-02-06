@@ -73,7 +73,10 @@ export default function AdminAddContent() {
                 title: "Success",
                 description: "Resource published successfully!",
             });
-            setLocation('/resources'); // Redirect or stay? Plan says redirect/success.
+            setUrl('');
+            setMetadata(null);
+            setSelectedCategory('');
+            setIsFeatured(false);
         },
         onError: (error: Error) => {
             toast({
