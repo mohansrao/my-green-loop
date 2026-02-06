@@ -15,7 +15,8 @@ module.exports = {
                 '^@db/(.*)$': '<rootDir>/db/$1',
                 '^@db$': '<rootDir>/db/index.ts',
                 '^(\\.{1,2}/.*)\\.js$': '$1'
-            }
+            },
+            extensionsToTreatAsEsm: ['.ts', '.tsx']
         },
         {
             displayName: 'client',
