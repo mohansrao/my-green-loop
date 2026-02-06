@@ -43,3 +43,8 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_auth:1.0.0", "javascript_websocket:1.0.0", "github:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+DANGEROUSLY_DISABLE_HOST_CHECK = "true"
