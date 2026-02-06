@@ -48,3 +48,4 @@ integrations = ["javascript_auth:1.0.0", "javascript_websocket:1.0.0", "github:1
 
 [userenv.shared]
 DANGEROUSLY_DISABLE_HOST_CHECK = "true"
+__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS = ".replit.dev,.repl.co"
