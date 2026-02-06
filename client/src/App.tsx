@@ -19,10 +19,20 @@ import AdminLogin from "@/pages/admin/login";
 import { ProtectedAdminRoute } from "@/lib/admin-auth";
 import Layout from "@/components/layout/layout";
 
+import AdminAddContent from "./pages/AdminAddContent";
+import AdminContentList from "./pages/AdminContentList";
+import Resources from "./pages/Resources";
+import MyBookmarks from "./pages/MyBookmarks";
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/resources" component={Resources} />
+      <Route path="/bookmarks" component={MyBookmarks} />
+      <Route path="/admin/resources" component={AdminContentList} />
+      <Route path="/admin/resources/add" component={AdminAddContent} />
+      {/* ... existing routes ... */}
       <Route path="/catalog" component={Catalog} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/thank-you" component={ThankYou} />

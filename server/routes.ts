@@ -1,11 +1,15 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          import type { Express } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { products, rentals, rentalItems, inventoryDates, feedback } from "@db/schema";
-import { eq, and, between, sql, inArray, desc } from "drizzle-orm";
+import {
+  products, rentals, rentalItems, inventoryDates, feedback,
+  contentItems, contentCategories, contentCategoryMapping, contentTags, contentTagMapping, contentBookmarks
+} from "@db/schema";
+import { eq, and, sql, or, exists, desc } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
+import { fetchUrlMetadata, extractDomain } from './services/metadata-fetcher';
 
 /**
  * Registers all API routes for the application
@@ -19,6 +23,236 @@ export function registerRoutes(app: Express): Server {
    * Register Twilio webhook routes for handling messaging callbacks
    */
   app.use('/api/webhook/twilio', twilioRoutes);
+
+  // --- CONTENT HUB API ---
+
+  // PUBLIC ENDPOINTS
+
+  /**
+   * Get all content items with filtering and search
+   * @route GET /api/content
+   */
+  app.get("/api/content", async (req, res) => {
+    try {
+      const { category, type, search, sort = 'recent', page = 1, limit = 20 } = req.query;
+
+      const conditions = [eq(contentItems.status, 'published')];
+
+      if (category) {
+        conditions.push(exists(
+          db.select().from(contentCategoryMapping)
+            .where(and(
+              eq(contentCategoryMapping.contentId, contentItems.id),
+              eq(contentCategoryMapping.categoryId, Number(category))
+            ))
+        ));
+      }
+
+      if (type) {
+        conditions.push(eq(contentItems.contentType, type as string));
+      }
+
+      if (search) {
+        conditions.push(or(
+          sql`${contentItems.title} ILIKE ${`%${search}%`}`,
+          sql`${contentItems.description} ILIKE ${`%${search}%`}`
+        ));
+      }
+
+      const items = await db.query.contentItems.findMany({
+        where: and(...conditions),
+        with: {
+          categoryMappings: {
+            with: { category: true }
+          }
+        },
+        orderBy: sort === 'popular' ? desc(contentItems.viewCount) : desc(contentItems.createdAt),
+        limit: Number(limit),
+        offset: (Number(page) - 1) * Number(limit),
+      });
+
+      res.json({ items, page: Number(page), limit: Number(limit) });
+    } catch (error) {
+      console.error('Error fetching content:', error);
+      res.status(500).json({ message: "Error fetching content" });
+    }
+  });
+
+  /**
+   * Get featured content items
+   * @route GET /api/content/featured
+   */
+  app.get("/api/content/featured", async (_req, res) => {
+    try {
+      const featured = await db.query.contentItems.findMany({
+        where: and(
+          eq(contentItems.status, 'published'),
+          eq(contentItems.isFeatured, true)
+        ),
+        with: {
+          categoryMappings: { with: { category: true } }
+        },
+        limit: 5,
+        orderBy: desc(contentItems.publishedAt),
+      });
+      res.json(featured);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching featured content" });
+    }
+  });
+
+  /**
+   * Get single content item details
+   * @route GET /api/content/:id
+   */
+  app.get("/api/content/:id", async (req, res) => {
+    try {
+      const content = await db.query.contentItems.findFirst({
+        where: eq(contentItems.id, Number(req.params.id)),
+        with: {
+          categoryMappings: { with: { category: true } },
+          tagMappings: { with: { tag: true } }
+        }
+      });
+
+      if (!content) {
+        return res.status(404).json({ message: "Content not found" });
+      }
+
+      // Increment view count asynchronously
+      db.update(contentItems)
+        .set({ viewCount: sql`${contentItems.viewCount} + 1` })
+        .where(eq(contentItems.id, Number(req.params.id)))
+        .execute();
+
+      res.json(content);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching content" });
+    }
+  });
+
+  /**
+   * Get all content categories
+   * @route GET /api/categories
+   */
+  app.get("/api/categories", async (_req, res) => {
+    try {
+      const categories = await db.query.contentCategories.findMany({
+        orderBy: contentCategories.order,
+      });
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching categories" });
+    }
+  });
+
+  // ADMIN ENDPOINTS
+
+  /**
+   * Admin: Fetch metadata for a URL before creation
+   * @route POST /api/admin/content/fetch-metadata
+   */
+  app.post("/api/admin/content/fetch-metadata", async (req, res) => {
+    try {
+      const { url } = req.body;
+
+      // Check for duplicate URL
+      const existing = await db.query.contentItems.findFirst({
+        where: eq(contentItems.url, url)
+      });
+
+      if (existing) {
+        return res.status(409).json({ message: "This URL already exists in the library" });
+      }
+
+      const metadata = await fetchUrlMetadata(url);
+      const domain = extractDomain(url);
+
+      res.json({
+        ...metadata,
+        source: domain,
+        url,
+      });
+    } catch (error) {
+      console.error('Error fetching metadata:', error);
+      res.status(500).json({ message: "Failed to fetch URL metadata" });
+    }
+  });
+
+  /**
+   * Admin: Create new content item
+   * @route POST /api/admin/content
+   */
+  app.post("/api/admin/content", async (req, res) => {
+    try {
+      const {
+        title, description, url, thumbnailUrl, contentType,
+        source, readingTime, categoryId, isFeatured
+      } = req.body;
+
+      const [newContent] = await db.insert(contentItems).values({
+        title,
+        description,
+        url,
+        thumbnailUrl,
+        contentType,
+        source,
+        readingTime,
+        isFeatured: isFeatured || false,
+        status: 'published',
+        publishedAt: new Date(),
+      }).returning();
+
+      // Map to primary category
+      await db.insert(contentCategoryMapping).values({
+        contentId: newContent.id,
+        categoryId: Number(categoryId),
+        isPrimary: true,
+      });
+
+      res.status(201).json(newContent);
+    } catch (error) {
+      console.error('Error creating content:', error);
+      res.status(500).json({ message: "Error creating content" });
+    }
+  });
+
+  /**
+   * Admin: Update existing content
+   * @route PATCH /api/admin/content/:id
+   */
+  app.patch("/api/admin/content/:id", async (req, res) => {
+    try {
+      const [updated] = await db.update(contentItems)
+        .set({ ...req.body, updatedAt: new Date() })
+        .where(eq(contentItems.id, Number(req.params.id)))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ message: "Content not found" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating content" });
+    }
+  });
+
+  /**
+   * Admin: Delete content item
+   * @route DELETE /api/admin/content/:id
+   */
+  app.delete("/api/admin/content/:id", async (req, res) => {
+    try {
+      await db.delete(contentItems)
+        .where(eq(contentItems.id, Number(req.params.id)));
+      res.json({ message: "Content deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting content" });
+    }
+  });
+
+  // --- END CONTENT HUB API ---
 
   /**
    * Get all available products
@@ -92,8 +326,8 @@ export function registerRoutes(app: Express): Server {
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
           between(
-            inventoryDates.date, 
-            format(start, 'yyyy-MM-dd'), 
+            inventoryDates.date,
+            format(start, 'yyyy-MM-dd'),
             format(end, 'yyyy-MM-dd')
           )
         ),
@@ -133,8 +367,8 @@ export function registerRoutes(app: Express): Server {
       const inventoryForRange = await db.query.inventoryDates.findMany({
         where: and(
           between(
-            inventoryDates.date, 
-            format(start, 'yyyy-MM-dd'), 
+            inventoryDates.date,
+            format(start, 'yyyy-MM-dd'),
             format(end, 'yyyy-MM-dd')
           )
         ),
@@ -282,8 +516,8 @@ export function registerRoutes(app: Express): Server {
         const inventoryForRange = await tx.query.inventoryDates.findMany({
           where: and(
             between(
-              inventoryDates.date, 
-              format(start, 'yyyy-MM-dd'), 
+              inventoryDates.date,
+              format(start, 'yyyy-MM-dd'),
               format(end, 'yyyy-MM-dd')
             )
           ),
@@ -294,8 +528,8 @@ export function registerRoutes(app: Express): Server {
         for (const item of items) {
           const minStock = inventoryForRange.length > 0
             ? Math.min(...inventoryForRange
-                .filter(inv => inv.productId === item.productId)
-                .map(inv => inv.availableStock))
+              .filter(inv => inv.productId === item.productId)
+              .map(inv => inv.availableStock))
             : 100;
 
           if (minStock < item.quantity) {
@@ -306,7 +540,7 @@ export function registerRoutes(app: Express): Server {
         // Calculate total amount
         const productsData = await db.query.products.findMany({
           where: inArray(
-            products.id, 
+            products.id,
             items.map(item => item.productId)
           )
         });
@@ -322,7 +556,7 @@ export function registerRoutes(app: Express): Server {
 
         // If any category has more than 50 units, charge $30, otherwise $15
         const hasOverage = Object.values(categoryQuantities).some(qty => qty > 50);
-        const totalAmount = hasOverage ? 30 : 15;
+        const totalAmount = hasOverage ? "30.00" : "15.00";
 
         // Insert the rental record
         const [rental] = await db.insert(rentals).values({
@@ -338,6 +572,7 @@ export function registerRoutes(app: Express): Server {
           pickupDate: start,
           createdAt: new Date(),
         }).returning();
+
 
         // Create rental items and update inventory
         for (const item of items) {
@@ -386,8 +621,8 @@ export function registerRoutes(app: Express): Server {
 
         // Send notifications after successful rental creation
         const notificationResult = await sendOrderNotification(
-          rental.id, 
-          rental.customerName, 
+          rental.id,
+          rental.customerName,
           Number(rental.totalAmount),
           phoneNumber, // Pass customer phone number
           orderDetails // Pass order details for message formatting
@@ -403,13 +638,13 @@ export function registerRoutes(app: Express): Server {
         );
 
         if (!notificationResult.success) {
-          console.warn(`SMS notifications failed for rental ID: ${rental.id}`, 
+          console.warn(`SMS notifications failed for rental ID: ${rental.id}`,
             notificationResult.results?.filter(r => !r.success).map(r => `${r.recipient}: ${r.hint}`).join(', ') || 'Unknown error'
           );
         }
 
         if (!emailResult.success) {
-          console.warn(`Email notifications failed for rental ID: ${rental.id}`, 
+          console.warn(`Email notifications failed for rental ID: ${rental.id}`,
             emailResult.results?.filter(r => !r.success).map(r => `${r.recipient}: ${r.error}`).join(', ') || 'Unknown error'
           );
         }

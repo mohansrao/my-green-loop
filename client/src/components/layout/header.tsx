@@ -21,12 +21,22 @@ export default function Header() {
                 Admin
               </Link>
             </Button>
-            
+
             {/* Desktop navigation */}
             <nav className="hidden md:flex items-center space-x-4">
+              <Link href="/resources">
+                <a className="text-sm font-medium text-gray-700 hover:text-green-700">
+                  Resources
+                </a>
+              </Link>
               <Link href="/catalog">
                 <a className="text-sm font-medium text-gray-700 hover:text-green-700">
                   Catalog
+                </a>
+              </Link>
+              <Link href="/bookmarks">
+                <a className="text-sm font-medium text-gray-700 hover:text-green-700 flex items-center gap-1">
+                  Saved
                 </a>
               </Link>
               <Link href="/reviews">
