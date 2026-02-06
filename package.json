@@ -10,7 +10,7 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:seed-categories": "tsx db/seed-categories.ts",
-    "test": "vitest run"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest -c jest.config.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -80,7 +80,6 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.4.5",
     "vaul": "^1.1.0",
-    "vitest": "^4.0.18",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "zod": "^3.23.8",
