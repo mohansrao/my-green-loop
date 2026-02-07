@@ -1,8 +1,12 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, LayoutDashboard } from "lucide-react";
+import { useAdminAuth } from "@/lib/admin-auth";
 
 export default function Header() {
+  const { isAuthenticated } = useAdminAuth();
+  const [location] = useLocation();
+
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto max-w-7xl px-4">
@@ -14,13 +18,22 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center space-x-2">
-            {/* Admin button - always visible */}
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/admin/login">
-                <Shield className="h-4 w-4 mr-1" />
-                Admin
-              </Link>
-            </Button>
+            {/* Admin button - dynamic based on auth state */}
+            {isAuthenticated ? (
+              <Button asChild variant="ghost" size="sm" className="text-green-700 bg-green-50">
+                <Link href="/admin/orders">
+                  <LayoutDashboard className="h-4 w-4 mr-1" />
+                  Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/admin/login">
+                  <Shield className="h-4 w-4 mr-1" />
+                  Admin
+                </Link>
+              </Button>
+            )}
 
             {/* Desktop navigation */}
             <nav className="hidden md:flex items-center space-x-4">

@@ -46,6 +46,7 @@ export function useAdminAuth() {
   }, []);
 
   const logout = () => {
+    console.log("[AdminAuth] Logging out");
     localStorage.removeItem("adminAuthenticated");
     localStorage.removeItem("adminLoginTime");
     setIsAuthenticated(false);
