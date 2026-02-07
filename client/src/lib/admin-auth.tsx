@@ -11,9 +11,9 @@ export function useAdminAuth() {
       const loginTime = localStorage.getItem("adminLoginTime");
       
       if (authenticated === "true" && loginTime) {
-        // Session expires after 24 hours
+        // Session expires after 30 days for better persistent experience
         const sessionAge = Date.now() - parseInt(loginTime);
-        const sessionValid = sessionAge < 24 * 60 * 60 * 1000;
+        const sessionValid = sessionAge < 30 * 24 * 60 * 60 * 1000;
         
         if (sessionValid) {
           setIsAuthenticated(true);
@@ -30,6 +30,16 @@ export function useAdminAuth() {
     };
 
     checkAuth();
+    
+    // Listen for storage changes to sync across tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "adminAuthenticated" || e.key === "adminLoginTime") {
+        checkAuth();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const logout = () => {
