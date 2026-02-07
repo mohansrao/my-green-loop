@@ -105,6 +105,15 @@ This is a full-stack web application for an eco-friendly dining rental service c
 
 ## Recent Changes
 
+### February 07, 2026 - Admin Dashboard UI Standardization and Session Persistence
+- **Standardized Admin UI**: Refactored the layout across all admin pages (Orders, Inventory, Notifications, Resources, and Feedback) for a consistent look and feel.
+- **Improved Feedback Management**: Converted the feedback list from a card-based view to a searchable table layout, matching the Orders dashboard. Updated analytics cards with consistent styling.
+- **Persistent Admin Sessions**: Implemented 30-day session persistence for admin authentication using local storage and custom event synchronization across browser tabs.
+- **Unified Navigation**: Fixed a bug where the admin submenu would disappear on certain pages (Notifications, Resources) by adding the `AdminNav` component to all dashboard views.
+- **Dynamic Header**: Updated the main site header to dynamically toggle between "Admin" and "Dashboard" immediately upon login/logout.
+- **Content Library Enhancements**: Standardized the Resource Library list view and updated action buttons to dynamically display "Watch Video", "Read Guide", or "Read Story" based on media type.
+- **SQL Bug Fix**: Resolved a category filtering error on the Resources page by replacing a complex subquery with a reliable `inArray` approach.
+
 ### July 10, 2025 - SMS Notification System Updated with Approved Templates
 - Updated SMS notification system to use Twilio-approved message templates
 - Implemented customer message format: "Your rental order has been received Rental Period From: [date] To: [date] Items ([count]) [item details] Total $[amount]"
