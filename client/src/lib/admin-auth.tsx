@@ -10,19 +10,23 @@ export function useAdminAuth() {
       const authenticated = localStorage.getItem("adminAuthenticated");
       const loginTime = localStorage.getItem("adminLoginTime");
       
+      console.log("[AdminAuth] Checking state:", { authenticated, loginTime });
+
       if (authenticated === "true" && loginTime) {
-        // Session expires after 30 days for better persistent experience
         const sessionAge = Date.now() - parseInt(loginTime);
         const sessionValid = sessionAge < 30 * 24 * 60 * 60 * 1000;
         
         if (sessionValid) {
+          console.log("[AdminAuth] Session valid, setting authenticated=true");
           setIsAuthenticated(true);
         } else {
+          console.log("[AdminAuth] Session expired");
           localStorage.removeItem("adminAuthenticated");
           localStorage.removeItem("adminLoginTime");
           setIsAuthenticated(false);
         }
       } else {
+        console.log("[AdminAuth] No session found");
         setIsAuthenticated(false);
       }
       
@@ -31,7 +35,6 @@ export function useAdminAuth() {
 
     checkAuth();
     
-    // Listen for storage changes to sync across tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "adminAuthenticated" || e.key === "adminLoginTime") {
         checkAuth();
