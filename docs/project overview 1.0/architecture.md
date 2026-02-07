@@ -26,6 +26,7 @@ The project follows a modern **Single Page Application (SPA)** architecture with
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/) for type-safe database interactions and migrations.
 - **Authentication**: [Passport.js](https://www.passportjs.org/) (Local strategy).
 - **Validation**: [Zod](https://zod.dev/) for schema-based validation on both frontend and backend.
+- **Scraping**: [Cheerio](https://cheerio.js.org/) for fetching metadata from external content URLs.
 
 ### Database
 - **Engine**: [PostgreSQL](https://www.postgresql.org/)
@@ -38,3 +39,10 @@ The database consist of several key tables:
 - `rentals`: Customer order headers (name, dates, total amount, status).
 - `rental_items`: Junction table connecting rentals to products with quantities.
 - `feedback`: Customer reviews, ratings, and usage stats (plates/glasses/spoons used).
+
+### Content Hub Schema
+- `content_items`: Educational resources (articles, video links) with metadata.
+- `content_categories`: Taxonomy for organizing content (e.g., "Zero Waste", "Energy").
+- `content_category_mapping`: Many-to-many relationship between items and categories.
+- `content_tags`: Flexible tagging system for granular content organization.
+- `content_bookmarks`: User-saved content items (future-proofing for auth).

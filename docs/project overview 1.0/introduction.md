@@ -16,4 +16,5 @@ The primary goal of the project is to make sustainable choices easier for event 
 - **Rental System**: Automated booking process with price calculation and confirmation.
 - **Automated Notifications**: WhatsApp/SMS and Email notifications for order confirmations.
 - **Feedback & Impact Tracking**: Customer feedback system that feeds into public analytics showing the number of items saved from landfills.
-- **Admin Management**: Dashboard-ready endpoints for managing orders, inventory, and feedback moderation.
+- **Content Hub**: Curated library of sustainable living resources (articles, videos) with search and filtering.
+- **Admin Management**: Dashboard-ready endpoints for managing orders, inventory, feedback, and content resources.

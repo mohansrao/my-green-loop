@@ -7,14 +7,23 @@
 ├── client/                 # React Frontend application
 │   ├── src/
 │   │   ├── components/     # Reusable UI components (Shadcn UI)
+│   │   │   ├── ContentCard.tsx # Resource content display card
+│   │   │   └── ui/         # Shadcn base components
 │   │   ├── hooks/          # Custom React hooks (e.g., use-mobile)
 │   │   ├── lib/            # Utility functions (queryClient, utils)
 │   │   ├── pages/          # Page-level components
+│   │   │   ├── Resources.tsx       # Public Content Hub page
+│   │   │   ├── MyBookmarks.tsx     # User's saved resources
+│   │   │   ├── AdminContentList.tsx # Admin content management
+│   │   │   └── AdminAddContent.tsx  # Admin content creation
 │   │   ├── App.tsx         # Main application entry point & routing
 │   │   └── main.tsx        # React DOM entry point
 ├── server/                 # Express Backend application
 │   ├── routes/             # Sub-routers (e.g., Twilio webhooks)
-│   ├── services/           # External service integrations (Twilio, Email)
+│   ├── services/           # External service integrations
+│   │   ├── metadata-fetcher.ts # Content metadata scraping service
+│   │   ├── email.ts        # Email notification service
+│   │   └── twilio.ts       # SMS notification service
 │   ├── utils/              # Server-side utilities
 │   ├── index.ts            # Server entry point & middleware
 │   ├── routes.ts           # Main API route definitions

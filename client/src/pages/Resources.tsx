@@ -20,6 +20,15 @@ import {
     Globe,
     Clock
 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { cn } from '@/lib/utils';
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -35,17 +44,20 @@ export default function Resources() {
     const [, setLocation] = useLocation();
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [search, setSearch] = useState('');
+    const [contentType, setContentType] = useState<string>('all');
+    const [sortBy, setSortBy] = useState<string>('recent');
 
     // Fetch categories
     const { data: categories } = useQuery<any[]>({
         queryKey: ['/api/categories'],
     });
 
-    // Fetch content
     // Fetch content with constructed URL for proper filtering
     const queryUrl = `/api/content?${new URLSearchParams({
         ...(selectedCategory ? { category: selectedCategory.toString() } : {}),
-        ...(search ? { search } : {})
+        ...(search ? { search } : {}),
+        ...(contentType && contentType !== 'all' ? { type: contentType } : {}),
+        sort: sortBy
     }).toString()}`;
 
     const { data: contentData, isLoading } = useQuery<any>({
@@ -102,11 +114,15 @@ export default function Resources() {
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-bold text-lg text-green-900 uppercase tracking-wider text-sm">Categories</h3>
-                                {selectedCategory && (
+                                {(selectedCategory || contentType !== 'all' || sortBy !== 'recent') && (
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setSelectedCategory(null)}
+                                        onClick={() => {
+                                            setSelectedCategory(null);
+                                            setContentType('all');
+                                            setSortBy('recent');
+                                        }}
                                         className="h-7 text-xs text-muted-foreground hover:text-green-700"
                                     >
                                         <FilterX className="h-3 w-3 mr-1" />
@@ -114,7 +130,7 @@ export default function Resources() {
                                     </Button>
                                 )}
                             </div>
-                            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 mb-8">
                                 {categories?.map((cat, idx) => {
                                     const Icon = CATEGORY_ICONS[cat.icon] || Leaf;
                                     const isActive = selectedCategory === cat.id;
@@ -144,6 +160,40 @@ export default function Resources() {
                                         </motion.button>
                                     );
                                 })}
+                            </div>
+
+                            {/* New Filters: Sort & Type */}
+                            <div className="space-y-6">
+                                <div>
+                                    <h3 className="font-bold text-sm text-green-900 uppercase tracking-wider mb-3">Sort By</h3>
+                                    <Select value={sortBy} onValueChange={setSortBy}>
+                                        <SelectTrigger className="w-full bg-white border-green-100/50">
+                                            <SelectValue placeholder="Sort order" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="recent">Most Recent</SelectItem>
+                                            <SelectItem value="popular">Most Popular</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-bold text-sm text-green-900 uppercase tracking-wider mb-3">Format</h3>
+                                    <RadioGroup value={contentType} onValueChange={setContentType} className="gap-2">
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="all" id="r-all" className="text-green-600 border-green-600" />
+                                            <Label htmlFor="r-all" className="text-sm font-medium text-gray-700 cursor-pointer">All Formats</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="article" id="r-article" className="text-green-600 border-green-600" />
+                                            <Label htmlFor="r-article" className="text-sm font-medium text-gray-700 cursor-pointer">Articles</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="video" id="r-video" className="text-green-600 border-green-600" />
+                                            <Label htmlFor="r-video" className="text-sm font-medium text-gray-700 cursor-pointer">Videos</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
                             </div>
                         </motion.div>
 

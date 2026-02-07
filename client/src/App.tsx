@@ -23,6 +23,7 @@ import AdminAddContent from "./pages/AdminAddContent";
 import AdminContentList from "./pages/AdminContentList";
 import Resources from "./pages/Resources";
 import MyBookmarks from "./pages/MyBookmarks";
+import Impact from "./pages/Impact";
 
 function Router() {
   return (
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/resources" component={Resources} />
       <Route path="/bookmarks" component={MyBookmarks} />
+      <Route path="/impact" component={Impact} />
       <Route path="/admin/resources">
         <ProtectedAdminRoute>
           <AdminContentList />

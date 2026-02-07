@@ -42,6 +42,11 @@ export default function Header() {
                   Resources
                 </a>
               </Link>
+              <Link href="/impact">
+                <a className="text-sm font-medium text-gray-700 hover:text-green-700">
+                  Impact
+                </a>
+              </Link>
               <Link href="/catalog">
                 <a className="text-sm font-medium text-gray-700 hover:text-green-700">
                   Catalog

@@ -1,9 +1,16 @@
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import ContentCard from "@/components/ContentCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Leaf, Recycle, Calendar } from "lucide-react";
+import { Leaf, Recycle, Calendar, ArrowRight } from "lucide-react";
 
 export default function Home() {
+  const { data: contentData } = useQuery<any>({
+    queryKey: ['/api/content?limit=3'],
+  });
+  const latestResources = contentData?.items || [];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto max-w-7xl px-4 py-16">
@@ -64,7 +71,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-green-800 text-center mb-8">Perfect for Every Occasion</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70"
                 alt="Family gathering outdoors with eco-friendly tableware"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -78,7 +85,7 @@ export default function Home() {
             </div>
 
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3"
                 alt="Outdoor celebration setup"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -92,7 +99,7 @@ export default function Home() {
             </div>
 
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1519046904884-53103b34b206"
                 alt="Beach gathering with sustainable dining"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -106,7 +113,7 @@ export default function Home() {
             </div>
 
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205"
                 alt="Cultural celebration setup"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -120,7 +127,7 @@ export default function Home() {
             </div>
 
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622"
                 alt="School event celebration"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -134,7 +141,7 @@ export default function Home() {
             </div>
 
             <div className="relative group overflow-hidden rounded-lg">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3"
                 alt="Sports event gathering"
                 className="w-full h-64 object-cover transition-transform group-hover:scale-105"
@@ -148,6 +155,30 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Latest Resources Section */}
+        {latestResources.length > 0 && (
+          <div className="max-w-6xl mx-auto mb-24">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-green-800 mb-2">Latest Resources</h2>
+                <p className="text-gray-600">Discover tips and guides for sustainable living</p>
+              </div>
+              <Link href="/resources">
+                <Button variant="ghost" className="text-green-700 hover:bg-green-50 group">
+                  View All Resources
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {latestResources.map((item: any) => (
+                <ContentCard key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-green-800 mb-8">How It Works</h2>
@@ -231,6 +262,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

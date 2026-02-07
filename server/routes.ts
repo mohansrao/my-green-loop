@@ -13,6 +13,7 @@ import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';
 import { fetchUrlMetadata, extractDomain } from './services/metadata-fetcher';
+import { getImpactStats } from './services/impact-analytics';
 
 /**
  * Registers all API routes for the application
@@ -26,6 +27,24 @@ export function registerRoutes(app: Express): Server {
    * Register Twilio webhook routes for handling messaging callbacks
    */
   app.use('/api/webhook/twilio', twilioRoutes);
+
+  // --- IMPACT ANALYTICS API ---
+
+  /**
+   * Get impact statistics (waste diverted, CO2 saved, etc.)
+   * @route GET /api/analytics/impact
+   */
+  app.get("/api/analytics/impact", async (_req, res) => {
+    try {
+      const stats = await getImpactStats();
+      // Set short cache to avoid re-calculating on every navigation
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching impact stats:', error);
+      res.status(500).json({ message: "Error calculating impact statistics" });
+    }
+  });
 
   // --- CONTENT HUB API ---
 

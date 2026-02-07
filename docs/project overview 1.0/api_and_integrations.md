@@ -21,6 +21,10 @@
 ### Replit Connectors
 - **Purpose**: Integration with Replit's environment for secrets and identity management.
 
+### Metadata Fetcher
+- **Library**: `cheerio`
+- **Purpose**: Extracts OpenGraph tags (title, image, description) and YouTube metadata from external URLs to auto-populate content forms.
+
 ## Key API Endpoints
 
 ### Products
@@ -42,3 +46,10 @@
 - `GET /api/feedback/public`: Retrieve approved feedback for the website.
 - `PATCH /api/feedback/:id/visibility`: Toggle feedback visibility (Admin).
 - `GET /api/feedback/analytics`: Get impact stats (items saved, average ratings).
+
+### Content Hub
+- `GET /api/content`: List resources with filters (category, type, sort, search).
+- `GET /api/content/featured`: Get top curated/featured resources.
+- `GET /api/categories`: List all content categories with icons.
+- `POST /api/admin/content`: Create new resource (Admin).
+- `POST /api/admin/content/fetch-metadata`: Scrape URL for auto-filling forms (Admin).
