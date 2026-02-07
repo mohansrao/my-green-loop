@@ -42,7 +42,17 @@ export function useAdminAuth() {
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    // Listen for custom events to handle same-tab updates
+    const handleCustomAuthChange = () => {
+      checkAuth();
+    };
+    window.addEventListener('admin-auth-change', handleCustomAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('admin-auth-change', handleCustomAuthChange);
+    };
   }, []);
 
   const logout = () => {

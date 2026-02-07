@@ -24,8 +24,8 @@ export default function AdminLogin() {
       localStorage.setItem("adminAuthenticated", "true");
       localStorage.setItem("adminLoginTime", Date.now().toString());
       
-      // Explicitly trigger storage event for the current tab
-      window.dispatchEvent(new Event('storage'));
+      // Trigger custom event for same-tab updates
+      window.dispatchEvent(new Event('admin-auth-change'));
       
       toast({
         title: "Login Successful",
