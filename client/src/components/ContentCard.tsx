@@ -166,7 +166,7 @@ export default function ContentCard({ item }: ContentCardProps) {
                         className="rounded-full -ml-2 text-green-700 hover:bg-green-50 hover:text-green-800 font-bold text-xs"
                         onClick={() => window.open(item.url, '_blank')}
                     >
-                        {item.contentType === 'video' ? 'Watch Video' : 'Read Story'}
+                        {item.contentType === 'video' ? 'Watch Video' : item.contentType === 'guide' ? 'Read Guide' : 'Read Story'}
                         <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
 

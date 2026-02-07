@@ -190,7 +190,7 @@ export default function Resources() {
                                             <span className="flex items-center gap-1"><Globe className="h-4 w-4" /> {featured.source}</span>
                                         </div>
                                         <Button className="mt-6 bg-white text-green-950 hover:bg-green-50 rounded-full px-8 h-12 font-bold group/btn">
-                                            Read Story
+                                            {featured.contentType === 'video' ? 'Watch Video' : featured.contentType === 'guide' ? 'Read Guide' : 'Read Story'}
                                             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                                         </Button>
                                     </div>
