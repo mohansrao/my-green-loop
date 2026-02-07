@@ -47,11 +47,15 @@ export async function getImpactStats(): Promise<ImpactStats> {
     // We can also calculate potential CO2/Water if needed, but for now we keep it as items count
     const [stockResult] = await db
         .select({
-            totalStock: sql<number>`sum(${products.totalStock})`
+            totalStock: sql<number>`sum(CAST(${products.totalStock} AS integer))`
         })
         .from(products);
 
     const totalStock = Number(stockResult?.totalStock) || 0;
+    // Calculate potential impact as yearly capacity: total items * 365 days
+    // However, if we want to show current inventory capacity, we should probably 
+    // sum the total_stock directly. The user screenshot says "we have the capacity to divert 0 items"
+    // which suggests it's calculating based on total units.
     const potentialImpact = totalStock * 365;
 
     return {
