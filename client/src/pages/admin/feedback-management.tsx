@@ -73,118 +73,135 @@ function FeedbackCard({ feedback, onToggleVisibility }: {
   onToggleVisibility: (id: number, isVisible: boolean) => void; 
 }) {
   return (
-    <Card className="mb-4">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">
-              {feedback.customerName || "Anonymous"}
-              {feedback.marketingConsent && (
-                <Badge variant="secondary" className="ml-2">Marketing OK</Badge>
-              )}
-            </CardTitle>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {format(new Date(feedback.rentalDate), "MMM d, yyyy")}
-              </div>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                {feedback.cityOfUse}
-              </div>
-              {feedback.imageUrls.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <Image className="w-4 h-4" />
-                  {feedback.imageUrls.length} photo{feedback.imageUrls.length !== 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onToggleVisibility(feedback.id, !feedback.isVisible)}
-          >
-            {feedback.isVisible ? (
-              <>
-                <EyeOff className="w-4 h-4 mr-1" />
-                Hide
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4 mr-1" />
-                Show
-              </>
-            )}
-          </Button>
+    <TableRow className="hover:bg-gray-50">
+      <TableCell className="font-medium">
+        <div>{feedback.customerName || "Anonymous"}</div>
+        <div className="text-xs text-muted-foreground">
+          {feedback.marketingConsent && (
+            <Badge variant="secondary" className="mt-1 h-5 text-[10px] px-1.5">Marketing OK</Badge>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        {/* Ratings */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <p className="text-sm font-medium">Likelihood to Rent Again</p>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5 text-sm">
+          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+          {format(new Date(feedback.rentalDate), "MMM d, yyyy")}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+          <MapPin className="w-3.5 h-3.5" />
+          {feedback.cityOfUse}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-4 max-w-[180px]">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Rent Again</span>
             <RatingStars rating={feedback.likelihoodToRentAgain} />
           </div>
-          <div>
-            <p className="text-sm font-medium">Likelihood to Recommend</p>
+          <div className="flex items-center justify-between gap-4 max-w-[180px]">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Recommend</span>
             <RatingStars rating={feedback.likelihoodToRecommend} />
           </div>
-          <div>
-            <p className="text-sm font-medium">Ordering Experience</p>
+          <div className="flex items-center justify-between gap-4 max-w-[180px]">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Experience</span>
             <RatingStars rating={feedback.orderingExperience} />
           </div>
         </div>
-
-        {/* Usage Data */}
-        {(feedback.platesUsed || feedback.glassesUsed || feedback.spoonsUsed) && (
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-2">Items Used</p>
-            <div className="flex gap-4 text-sm">
-              {feedback.platesUsed && (
-                <span>Plates: {feedback.platesUsed}</span>
-              )}
-              {feedback.glassesUsed && (
-                <span>Glasses: {feedback.glassesUsed}</span>
-              )}
-              {feedback.spoonsUsed && (
-                <span>Spoons: {feedback.spoonsUsed}</span>
-              )}
-            </div>
+      </TableCell>
+      <TableCell>
+        {(feedback.platesUsed || feedback.glassesUsed || feedback.spoonsUsed) ? (
+          <div className="text-xs space-y-0.5">
+            {feedback.platesUsed && <div>Plates: <span className="font-medium">{feedback.platesUsed}</span></div>}
+            {feedback.glassesUsed && <div>Glasses: <span className="font-medium">{feedback.glassesUsed}</span></div>}
+            {feedback.spoonsUsed && <div>Spoons: <span className="font-medium">{feedback.spoonsUsed}</span></div>}
           </div>
+        ) : (
+          <span className="text-muted-foreground text-xs italic">No data</span>
         )}
-
-        {/* Suggestions */}
-        {feedback.suggestions && (
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-2">Suggestions</p>
-            <p className="text-sm text-muted-foreground bg-gray-50 p-3 rounded">
-              {feedback.suggestions}
-            </p>
-          </div>
+      </TableCell>
+      <TableCell className="max-w-xs">
+        {feedback.suggestions ? (
+          <p className="text-xs text-muted-foreground line-clamp-2 italic">
+            "{feedback.suggestions}"
+          </p>
+        ) : (
+          <span className="text-muted-foreground text-xs italic">No suggestions</span>
         )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={feedback.isVisible ? "default" : "secondary"} className="text-[10px] h-5 px-1.5">
+          {feedback.isVisible ? "Public" : "Hidden"}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => onToggleVisibility(feedback.id, !feedback.isVisible)}
+        >
+          {feedback.isVisible ? (
+            <EyeOff className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <Eye className="w-4 h-4 text-blue-600" />
+          )}
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+}
 
-        {/* Images */}
-        {feedback.imageUrls.length > 0 && (
-          <div>
-            <p className="text-sm font-medium mb-2">Photos</p>
-            <div className="flex gap-2">
-              {feedback.imageUrls.map((url, index) => (
-                <div key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                  {url}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-4 pt-4 border-t">
-          <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <span>Submitted: {format(new Date(feedback.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
-            <Badge variant={feedback.isVisible ? "default" : "secondary"}>
-              {feedback.isVisible ? "Public" : "Hidden"}
-            </Badge>
-          </div>
+function FeedbackTable({ 
+  items, 
+  onToggleVisibility, 
+  isLoading, 
+  emptyMessage 
+}: { 
+  items: FeedbackItem[]; 
+  onToggleVisibility: (id: number, isVisible: boolean) => void;
+  isLoading?: boolean;
+  emptyMessage: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50 hover:bg-gray-50">
+                <TableHead className="font-semibold text-gray-900">Customer</TableHead>
+                <TableHead className="font-semibold text-gray-900">Rental Details</TableHead>
+                <TableHead className="font-semibold text-gray-900">Ratings</TableHead>
+                <TableHead className="font-semibold text-gray-900">Items Used</TableHead>
+                <TableHead className="font-semibold text-gray-900">Suggestions</TableHead>
+                <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                <TableHead className="text-right font-semibold text-gray-900">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    Loading feedback...
+                  </TableCell>
+                </TableRow>
+              ) : items.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    {emptyMessage}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map((item) => (
+                  <FeedbackCard
+                    key={item.id}
+                    feedback={item}
+                    onToggleVisibility={onToggleVisibility}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
@@ -194,110 +211,125 @@ function FeedbackCard({ feedback, onToggleVisibility }: {
 function AnalyticsTab({ analytics }: { analytics: AnalyticsData | null }) {
   if (!analytics) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-12 text-muted-foreground bg-white border rounded-lg">
         Loading analytics...
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Usage Statistics */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Usage Analytics
-        </h3>
+    <div className="space-y-8">
+      {/* Analytics Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-800">Total Plates Used</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-900">{analytics.usage.total.plates.toLocaleString()}</div>
+            <p className="text-xs text-green-600 mt-1">All time</p>
+          </CardContent>
+        </Card>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Total Usage */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Total Usage (All Time)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Plates Used:</span>
-                  <span className="font-semibold">{analytics.usage.total.plates.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Glasses Used:</span>
-                  <span className="font-semibold">{analytics.usage.total.glasses.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Spoons Used:</span>
-                  <span className="font-semibold">{analytics.usage.total.spoons.toLocaleString()}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span>Total Events:</span>
-                  <span className="font-semibold">{analytics.usage.total.events}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-blue-800">Total Glasses Used</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-900">{analytics.usage.total.glasses.toLocaleString()}</div>
+            <p className="text-xs text-blue-600 mt-1">All time</p>
+          </CardContent>
+        </Card>
 
-          {/* Year to Date */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Year to Date ({analytics.year})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Plates Used:</span>
-                  <span className="font-semibold">{analytics.usage.yearToDate.plates.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Glasses Used:</span>
-                  <span className="font-semibold">{analytics.usage.yearToDate.glasses.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Spoons Used:</span>
-                  <span className="font-semibold">{analytics.usage.yearToDate.spoons.toLocaleString()}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span>Events in {analytics.year}:</span>
-                  <span className="font-semibold">{analytics.usage.yearToDate.events}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-orange-800">Total Spoons Used</CardTitle>
+            <TrendingUp className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-900">{analytics.usage.total.spoons.toLocaleString()}</div>
+            <p className="text-xs text-orange-600 mt-1">All time</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-purple-800">Total Events</CardTitle>
+            <Calendar className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-900">{analytics.usage.total.events}</div>
+            <p className="text-xs text-purple-600 mt-1">Sustainability tracked</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Average Ratings */}
-      {analytics.averageRatings && (
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Average Customer Ratings</h3>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Likelihood to Rent Again</p>
-                  <div className="text-2xl font-bold mb-2">{analytics.averageRatings.likelihoodToRentAgain}/5</div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Year to Date Summary */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+              Year to Date ({analytics.year})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                <span className="text-sm text-muted-foreground">Plates Used</span>
+                <span className="font-semibold text-gray-900">{analytics.usage.yearToDate.plates.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                <span className="text-sm text-muted-foreground">Glasses Used</span>
+                <span className="font-semibold text-gray-900">{analytics.usage.yearToDate.glasses.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                <span className="text-sm text-muted-foreground">Spoons Used</span>
+                <span className="font-semibold text-gray-900">{analytics.usage.yearToDate.spoons.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-sm text-muted-foreground">Total Events</span>
+                <span className="font-semibold text-green-600">{analytics.usage.yearToDate.events}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Average Ratings */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg">Customer Satisfaction</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics.averageRatings ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Rent Again</p>
+                  <div className="text-3xl font-bold text-gray-900 mb-2">{analytics.averageRatings.likelihoodToRentAgain}/5</div>
                   <RatingStars rating={Math.round(parseFloat(analytics.averageRatings.likelihoodToRentAgain))} />
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Likelihood to Recommend</p>
-                  <div className="text-2xl font-bold mb-2">{analytics.averageRatings.likelihoodToRecommend}/5</div>
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Recommend</p>
+                  <div className="text-3xl font-bold text-gray-900 mb-2">{analytics.averageRatings.likelihoodToRecommend}/5</div>
                   <RatingStars rating={Math.round(parseFloat(analytics.averageRatings.likelihoodToRecommend))} />
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Ordering Experience</p>
-                  <div className="text-2xl font-bold mb-2">{analytics.averageRatings.orderingExperience}/5</div>
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Ordering</p>
+                  <div className="text-3xl font-bold text-gray-900 mb-2">{analytics.averageRatings.orderingExperience}/5</div>
                   <RatingStars rating={Math.round(parseFloat(analytics.averageRatings.orderingExperience))} />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            Based on {analytics.totalFeedbackCount} feedback submissions
-          </p>
-        </div>
-      )}
+            ) : (
+              <div className="text-center py-8 text-muted-foreground italic">No rating data yet</div>
+            )}
+            <p className="text-center text-xs text-muted-foreground mt-6 italic">
+              Results calculated from {analytics.totalFeedbackCount} verified customer submissions
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -340,95 +372,75 @@ export default function FeedbackManagement() {
     toggleVisibilityMutation.mutate({ id, isVisible });
   };
 
+  const visibleFeedback = feedback.filter(f => f.isVisible);
+
   if (feedbackLoading) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div>
         <AdminNav />
-        <div className="text-center py-8">Loading feedback data...</div>
+        <div className="container mx-auto py-8 px-4 space-y-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="grid grid-cols-3 gap-4 mt-8">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+            <div className="h-64 bg-gray-100 rounded mt-8"></div>
+          </div>
+        </div>
       </div>
     );
   }
-
-  const visibleFeedback = feedback.filter(f => f.isVisible);
-  const hiddenFeedback = feedback.filter(f => !f.isVisible);
 
   return (
     <div>
       <AdminNav />
       <div className="container mx-auto py-8 px-4 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Feedback Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage customer feedback and view usage analytics
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Feedback Management</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage customer feedback and view usage analytics
+            </p>
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="feedback">
-            All Feedback ({feedback.length})
-          </TabsTrigger>
-          <TabsTrigger value="public">
-            Public ({visibleFeedback.length})
-          </TabsTrigger>
-          <TabsTrigger value="analytics">
-            Analytics
-          </TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 p-1 h-auto">
+            <TabsTrigger value="feedback" className="py-2.5 data-[state=active]:bg-gray-100">
+              All Submissions ({feedback.length})
+            </TabsTrigger>
+            <TabsTrigger value="public" className="py-2.5 data-[state=active]:bg-gray-100">
+              Public Display ({visibleFeedback.length})
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="py-2.5 data-[state=active]:bg-gray-100">
+              Analytics Overview
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="feedback" className="mt-6">
-          {feedback.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No feedback submissions yet.
-            </div>
-          ) : (
-            <div>
-              <div className="mb-4 flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">
-                  {feedback.length} total submissions • {visibleFeedback.length} public • {hiddenFeedback.length} hidden
-                </p>
-              </div>
-              
-              {feedback.map((item) => (
-                <FeedbackCard
-                  key={item.id}
-                  feedback={item}
-                  onToggleVisibility={handleToggleVisibility}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+          <TabsContent value="feedback" className="mt-0">
+            <FeedbackTable 
+              items={feedback} 
+              onToggleVisibility={handleToggleVisibility} 
+              emptyMessage="No feedback submissions yet."
+            />
+          </TabsContent>
 
-        <TabsContent value="public" className="mt-6">
-          {visibleFeedback.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No public feedback available. Make feedback visible to display it here.
-            </div>
-          ) : (
-            <div>
-              <div className="mb-4">
-                <p className="text-sm text-muted-foreground">
-                  {visibleFeedback.length} public feedback submissions
-                </p>
-              </div>
-              
-              {visibleFeedback.map((item) => (
-                <FeedbackCard
-                  key={item.id}
-                  feedback={item}
-                  onToggleVisibility={handleToggleVisibility}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+          <TabsContent value="public" className="mt-0">
+            <FeedbackTable 
+              items={visibleFeedback} 
+              onToggleVisibility={handleToggleVisibility} 
+              emptyMessage="No public feedback available yet."
+            />
+          </TabsContent>
 
-        <TabsContent value="analytics" className="mt-6">
-          <AnalyticsTab analytics={analytics || null} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="analytics" className="mt-0">
+            <AnalyticsTab analytics={analytics || null} />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
-  </div>
   );
 }
