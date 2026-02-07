@@ -9,8 +9,8 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
   totalStock: integer("total_stock").notNull().default(100),
-  co2Saved: decimal("co2_saved", { precision: 10, scale: 3 }).default("0.05").notNull(), // kg per item
-  waterSaved: decimal("water_saved", { precision: 10, scale: 3 }).default("0.5").notNull(), // liters per item
+  co2Saved: decimal("co2_saved", { precision: 10, scale: 3 }).default("50.000").notNull(), // grams per item
+  waterSaved: decimal("water_saved", { precision: 10, scale: 3 }).default("28.000").notNull(), // liters per item
 });
 
 export const inventoryDates = pgTable("inventory_dates", {

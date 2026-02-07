@@ -16,7 +16,9 @@ export async function getImpactStats(): Promise<ImpactStats> {
     const [impactResult] = await db
         .select({
             totalQuantity: sql<number>`sum(${rentalItems.quantity})`,
-            totalCo2: sql<number>`sum(${rentalItems.quantity} * ${products.co2Saved})`,
+            // CO2 is stored in grams, calculation returns total grams
+            totalCo2Grams: sql<number>`sum(${rentalItems.quantity} * ${products.co2Saved})`,
+            // Water is stored in liters
             totalWater: sql<number>`sum(${rentalItems.quantity} * ${products.waterSaved})`
         })
         .from(rentalItems)
@@ -24,8 +26,11 @@ export async function getImpactStats(): Promise<ImpactStats> {
 
     const wasteDiverted = Number(impactResult?.totalQuantity) || 0;
 
-    // Round to 2 decimal places
-    const co2Saved = Math.round((Number(impactResult?.totalCo2) || 0) * 100) / 100;
+    // Convert grams to kg by dividing by 1000, then round to 2 decimals
+    const totalCo2Grams = Number(impactResult?.totalCo2Grams) || 0;
+    const co2Saved = Math.round((totalCo2Grams / 1000) * 100) / 100;
+
+    // Water is already in liters, just round
     const waterSaved = Math.round((Number(impactResult?.totalWater) || 0) * 100) / 100;
 
     // 2. Get total number of rental orders

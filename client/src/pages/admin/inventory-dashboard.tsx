@@ -68,8 +68,8 @@ export default function InventoryDashboard() {
   const handleEditClick = (product: Product) => {
     setEditingProduct(product);
     setEditForm({
-      co2Saved: String(product.co2Saved || 0.05),
-      waterSaved: String(product.waterSaved || 0.5),
+      co2Saved: String(product.co2Saved || 50),
+      waterSaved: String(product.waterSaved || 28),
       totalStock: String(product.totalStock)
     });
   };
@@ -267,7 +267,7 @@ export default function InventoryDashboard() {
                       <TableHead className="font-semibold">Product</TableHead>
                       <TableHead className="font-semibold">Category</TableHead>
                       <TableHead className="font-semibold">Stock</TableHead>
-                      <TableHead className="font-semibold">Impact (CO₂ / Water)</TableHead>
+                      <TableHead className="font-semibold">Impact (CO₂ g / Water L)</TableHead>
                       <TableHead className="font-semibold text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -296,8 +296,8 @@ export default function InventoryDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div className="flex items-center gap-1"><span className="text-gray-500">CO₂:</span> {product.co2Saved || "0.05"} kg</div>
-                            <div className="flex items-center gap-1"><span className="text-gray-500">Water:</span> {product.waterSaved || "0.5"} L</div>
+                            <div className="flex items-center gap-1"><span className="text-gray-500">CO₂:</span> {product.co2Saved || "50"} g</div>
+                            <div className="flex items-center gap-1"><span className="text-gray-500">Water:</span> {product.waterSaved || "28"} L</div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
@@ -335,7 +335,7 @@ export default function InventoryDashboard() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="co2" className="text-right">
-                  CO₂ Saved (kg)
+                  CO₂ Saved (g)
                 </Label>
                 <Input
                   id="co2"
