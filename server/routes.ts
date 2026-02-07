@@ -300,6 +300,33 @@ export function registerRoutes(app: Express): Server {
   // --- END CONTENT HUB API ---
 
   /**
+   * Update product details (stock, impact metrics)
+   * @route PATCH /api/products/:id
+   */
+  app.patch("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid product ID" });
+
+      const { co2Saved, waterSaved, totalStock } = req.body;
+
+      await db.update(products)
+        .set({
+          co2Saved: co2Saved ? String(co2Saved) : undefined,
+          waterSaved: waterSaved ? String(waterSaved) : undefined,
+          totalStock: totalStock !== undefined ? Number(totalStock) : undefined
+        })
+        .where(eq(products.id, id));
+
+      const updated = await db.select().from(products).where(eq(products.id, id)).limit(1);
+      res.json(updated[0]);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ message: "Error updating product" });
+    }
+  });
+
+  /**
    * Get all available products
    * @route GET /api/products
    * @returns {Object[]} List of all products with their details
@@ -309,7 +336,9 @@ export function registerRoutes(app: Express): Server {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-      const allProducts = await db.query.products.findMany();
+      const allProducts = await db.query.products.findMany({
+        orderBy: (products, { asc }) => [asc(products.id)]
+      });
       res.json(allProducts);
     } catch (error) {
       res.status(500).json({ message: "Error fetching products" });

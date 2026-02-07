@@ -10,20 +10,23 @@ export interface ImpactStats {
     totalRentals: number;
 }
 
-// Estimates per item
-const CO2_PER_ITEM_KG = 0.05; // ~50g CO2 saved per reuse vs disposable
-const WATER_PER_ITEM_LITER = 0.5; // ~0.5L water saved per reuse vs manufacturing
-
 export async function getImpactStats(): Promise<ImpactStats> {
-    // 1. Get total items rented across all time
-    // We sum the quantity from all rental_items
-    const [itemsResult] = await db
+    // 1. Get total items rented and impact metrics
+    // We join rentalItems with products to get the specific impact per item
+    const [impactResult] = await db
         .select({
-            totalQuantity: sql<number>`sum(${rentalItems.quantity})`
+            totalQuantity: sql<number>`sum(${rentalItems.quantity})`,
+            totalCo2: sql<number>`sum(${rentalItems.quantity} * ${products.co2Saved})`,
+            totalWater: sql<number>`sum(${rentalItems.quantity} * ${products.waterSaved})`
         })
-        .from(rentalItems);
+        .from(rentalItems)
+        .leftJoin(products, eq(rentalItems.productId, products.id));
 
-    const wasteDiverted = Number(itemsResult?.totalQuantity) || 0;
+    const wasteDiverted = Number(impactResult?.totalQuantity) || 0;
+
+    // Round to 2 decimal places
+    const co2Saved = Math.round((Number(impactResult?.totalCo2) || 0) * 100) / 100;
+    const waterSaved = Math.round((Number(impactResult?.totalWater) || 0) * 100) / 100;
 
     // 2. Get total number of rental orders
     const [rentalsResult] = await db
@@ -34,12 +37,9 @@ export async function getImpactStats(): Promise<ImpactStats> {
 
     const totalRentals = Number(rentalsResult?.count) || 0;
 
-    // 3. Calculate Environmental Savings
-    const co2Saved = Math.round(wasteDiverted * CO2_PER_ITEM_KG * 100) / 100;
-    const waterSaved = Math.round(wasteDiverted * WATER_PER_ITEM_LITER * 100) / 100;
-
     // 4. Calculate Potential Impact (Catalogue Capacity)
-    // Sum of total_stock of all products * 365 days
+    // Sum of (total_stock * 365) for each product
+    // We can also calculate potential CO2/Water if needed, but for now we keep it as items count
     const [stockResult] = await db
         .select({
             totalStock: sql<number>`sum(${products.totalStock})`
