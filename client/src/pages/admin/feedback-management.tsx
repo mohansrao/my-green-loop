@@ -353,17 +353,17 @@ export default function FeedbackManagement() {
   const hiddenFeedback = feedback.filter(f => !f.isVisible);
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div>
       <AdminNav />
-      
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Feedback Management</h1>
-        <p className="text-muted-foreground">
-          Manage customer feedback and view usage analytics
-        </p>
-      </div>
+      <div className="container mx-auto py-8 px-4 space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Feedback Management</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage customer feedback and view usage analytics
+          </p>
+        </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="feedback">
             All Feedback ({feedback.length})
@@ -429,5 +429,6 @@ export default function FeedbackManagement() {
         </TabsContent>
       </Tabs>
     </div>
+  </div>
   );
 }
