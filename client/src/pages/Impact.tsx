@@ -60,11 +60,13 @@ export default function Impact() {
     }
 
     // Community Goal Logic
-    // Check next power of 10 milestone
-    const nextMilestone = Math.pow(10, Math.ceil(Math.log10(wasteDiverted + 1)));
-    // If we are exactly at a power of 10 (e.g. 100), aim for 1000
-    const goal = nextMilestone === wasteDiverted ? nextMilestone * 10 : nextMilestone;
-    const progressPercent = Math.min(100, (wasteDiverted / goal) * 100);
+    // Check next power of 10 milestone, but start with at least 100
+    const nextMilestone = Math.pow(10, Math.ceil(Math.log10(Math.max(wasteDiverted, 10) + 1)));
+    // If we are exactly at a power of 10, aim for the next one
+    const goal = nextMilestone <= wasteDiverted ? nextMilestone * 10 : nextMilestone;
+    // Enforce minimum goal of 100
+    const finalGoal = Math.max(goal, 100);
+    const progressPercent = Math.min(100, (wasteDiverted / finalGoal) * 100);
 
     // Mock data for the chart (for now, until we have daily history)
     // In a real app, we would fetch daily history from backend
@@ -137,7 +139,7 @@ export default function Impact() {
                                 <div className="flex justify-between items-end mb-4">
                                     <div>
                                         <h2 className="text-2xl font-bold text-green-900 mb-1">Community Goal</h2>
-                                        <p className="text-green-700">Help us reach <span className="font-bold">{goal.toLocaleString()}</span> items diverted!</p>
+                                        <p className="text-green-700">Help us reach <span className="font-bold">{finalGoal.toLocaleString()}</span> items diverted!</p>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-4xl font-bold text-green-600">{Math.round(progressPercent)}%</span>
@@ -202,6 +204,7 @@ export default function Impact() {
                             </h3>
                             <p className="text-green-100/80 mb-6">
                                 With our current inventory, we have the capacity to divert <strong className="text-white">{potentialImpact.toLocaleString()}</strong> items from landfills every year.
+                                {potentialImpact === 0 && <span className="block text-xs mt-2 text-green-300">(Add products to inventory to see this grow!)</span>}
                             </p>
                             <div className="flex gap-2">
                                 <div className="h-2 flex-1 bg-green-500/30 rounded-full overflow-hidden">
