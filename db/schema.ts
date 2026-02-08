@@ -75,6 +75,7 @@ export const contentCategories = pgTable("content_categories", {
   icon: text("icon"),
   color: text("color"),
   order: integer("order").default(0),
+  isVisible: boolean("is_visible").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -176,10 +176,26 @@ export function registerRoutes(app: Express): Server {
   });
 
   /**
-   * Get all content categories
+   * Get visible content categories for public view
    * @route GET /api/categories
    */
   app.get("/api/categories", async (_req, res) => {
+    try {
+      const categories = await db.query.contentCategories.findMany({
+        where: eq(contentCategories.isVisible, true),
+        orderBy: contentCategories.order,
+      });
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching categories" });
+    }
+  });
+
+  /**
+   * Get all content categories (Admin)
+   * @route GET /api/admin/categories
+   */
+  app.get("/api/admin/categories", async (_req, res) => {
     try {
       const categories = await db.query.contentCategories.findMany({
         orderBy: contentCategories.order,
@@ -187,6 +203,63 @@ export function registerRoutes(app: Express): Server {
       res.json(categories);
     } catch (error) {
       res.status(500).json({ message: "Error fetching categories" });
+    }
+  });
+
+  /**
+   * Create content category
+   * @route POST /api/categories
+   */
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const { name, icon, color, description } = req.body;
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      const [newCategory] = await db.insert(contentCategories).values({
+        name,
+        slug,
+        icon,
+        color,
+        description,
+        order: 0,
+        isVisible: true
+      }).returning();
+
+      res.status(201).json(newCategory);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      res.status(500).json({ message: "Error creating category" });
+    }
+  });
+
+  /**
+   * Update content category
+   * @route PATCH /api/categories/:id
+   */
+  app.patch("/api/categories/:id", async (req, res) => {
+    try {
+      const { name, icon, color, description, isVisible, order } = req.body;
+
+      const updateData: any = {};
+      if (name) {
+        updateData.name = name;
+        updateData.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      }
+      if (icon !== undefined) updateData.icon = icon;
+      if (color !== undefined) updateData.color = color;
+      if (description !== undefined) updateData.description = description;
+      if (isVisible !== undefined) updateData.isVisible = isVisible;
+      if (order !== undefined) updateData.order = order;
+
+      const [updated] = await db.update(contentCategories)
+        .set(updateData)
+        .where(eq(contentCategories.id, Number(req.params.id)))
+        .returning();
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ message: "Error updating category" });
     }
   });
 
