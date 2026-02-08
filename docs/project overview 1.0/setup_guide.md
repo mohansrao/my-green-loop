@@ -100,3 +100,29 @@ Ensure your `.env` file is in the root directory and you are running the `node -
 
 ### "Error [ERR_MODULE_NOT_FOUND]"
 This usually means a dependency is missing. Run the **Intel Mac Fix** command in Section 2.
+
+---
+
+## 5. Deployment on Replit
+
+When pushing changes to Replit, follow these steps to ensure the database and environment are configured correctly:
+
+### 1. Environment Configuration
+Replit uses **Secrets** instead of a `.env` file. However, because our scripts are optimized for local development and look for a `.env` file, you may see a `.env: not found` error.
+- **Fix**: Simply create an empty file named `.env` in the root of your Replit project. This satisfies the script requirements without interfering with your Replit Secrets.
+
+### 2. Node Version
+Ensure Replit is using Node 20. If needed, run:
+```bash
+nvm use 20
+```
+
+### 3. Dependency Installation
+Run `npm install` to ensure the new `pg` driver and Intel Mac fixes are installed.
+
+### 4. Database Schema Update
+Run the following in the Replit terminal:
+```bash
+npm run db:push
+```
+*(Optionally run `npm run db:seed-categories` if your database is empty).*
