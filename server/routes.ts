@@ -8,7 +8,7 @@ import {
 // Note: inArray is used instead of exists for category filtering — see the
 // GET /api/content handler comments for the explanation of why exists() is
 // incompatible with Drizzle's relational query API (db.query.*.findMany)
-import { eq, and, sql, or, desc, inArray } from "drizzle-orm";
+import { eq, and, sql, or, desc, inArray, between } from "drizzle-orm";
 import { addDays, format } from "date-fns";
 import { sendOrderNotification } from './services/twilio';
 import twilioRoutes from './routes/twilio';

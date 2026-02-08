@@ -208,7 +208,10 @@ export default function Impact() {
                             </p>
                             <div className="flex gap-2">
                                 <div className="h-2 flex-1 bg-green-500/30 rounded-full overflow-hidden">
-                                    <div className="h-full bg-green-400 w-[15%]" />
+                                    <div 
+                                        className="h-full bg-green-400 transition-all duration-1000" 
+                                        style={{ width: `${Math.min(100, Math.max(wasteDiverted > 0 ? 5 : 0, potentialImpact > 0 ? (wasteDiverted / (potentialImpact / 10)) * 100 : 0))}%` }} 
+                                    />
                                 </div>
                             </div>
                             <p className="text-xs text-green-400 mt-2 text-right">Current Utilization</p>

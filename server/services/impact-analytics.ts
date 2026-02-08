@@ -15,11 +15,11 @@ export async function getImpactStats(): Promise<ImpactStats> {
     // We join rentalItems with products to get the specific impact per item
     const [impactResult] = await db
         .select({
-            totalQuantity: sql<number>`sum(${rentalItems.quantity})`,
+            totalQuantity: sql<string>`coalesce(sum(${rentalItems.quantity}), '0')`,
             // CO2 is stored in grams, calculation returns total grams
-            totalCo2Grams: sql<number>`sum(${rentalItems.quantity} * ${products.co2Saved})`,
+            totalCo2Grams: sql<string>`coalesce(sum(${rentalItems.quantity} * ${products.co2Saved}), '0')`,
             // Water is stored in liters
-            totalWater: sql<number>`sum(${rentalItems.quantity} * ${products.waterSaved})`
+            totalWater: sql<string>`coalesce(sum(${rentalItems.quantity} * ${products.waterSaved}), '0')`
         })
         .from(rentalItems)
         .leftJoin(products, eq(rentalItems.productId, products.id));
@@ -36,26 +36,18 @@ export async function getImpactStats(): Promise<ImpactStats> {
     // 2. Get total number of rental orders
     const [rentalsResult] = await db
         .select({
-            count: sql<number>`count(*)`
+            count: sql<string>`count(*)`
         })
         .from(rentals);
 
     const totalRentals = Number(rentalsResult?.count) || 0;
 
     // 4. Calculate Potential Impact (Catalogue Capacity)
-    // Sum of (total_stock * 365) for each product
-    // We can also calculate potential CO2/Water if needed, but for now we keep it as items count
-    const [stockResult] = await db
-        .select({
-            totalStock: sql<number>`sum(CAST(${products.totalStock} AS integer))`
-        })
-        .from(products);
-
-    const totalStock = Number(stockResult?.totalStock) || 0;
-    // Calculate potential impact as yearly capacity: total items * 365 days
-    // However, if we want to show current inventory capacity, we should probably 
-    // sum the total_stock directly. The user screenshot says "we have the capacity to divert 0 items"
-    // which suggests it's calculating based on total units.
+    // Use a more robust way to sum totalStock to avoid SQL driver issues
+    const productsData = await db.select({ totalStock: products.totalStock }).from(products);
+    const totalStock = productsData.reduce((sum, p) => sum + (p.totalStock || 0), 0);
+    
+    // Yearly capacity (total stock * 365)
     const potentialImpact = totalStock * 365;
 
     return {
