@@ -3,6 +3,10 @@ import twilio from "twilio";
 /**
  * Environment Configuration
  * Contains all necessary Twilio-related configuration settings from environment variables
+ *
+ * Note: The webhook URL must be configured in the Twilio console to receive callbacks for the Sandbox
+ * Messaging (on left panel) > Send a WhatsApp Msg > Sandbox Settings (Tab on right panel) > When a Message Arrives
+ * https://33dc2aad-edca-41df-9818-a9cb3830f18e-00-3je0vw80laf04.spock.replit.dev/api/webhook/twilio/message
  */
 const config = {
   isProduction: process.env.NODE_ENV === 'production',
