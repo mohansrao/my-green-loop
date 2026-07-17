@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "WFJVgB4buTfU1v0xptG_1"
+uri = "file://screenshots/flyer-draft.jpg"
+type = "image"
+title = "Marketing Flyer Draft (top section)"
