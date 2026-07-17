@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import AdminNav from "@/components/admin/admin-nav";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -18,14 +18,6 @@ interface Setting {
   description: string;
   value: string;
 }
-
-const ICONS: Record<string, any> = {
-  admin_phone: Phone,
-  admin_email: Mail,
-  sms_notifications_enabled: Bell,
-  max_rental_days: Calendar,
-  max_sets: Package,
-};
 
 export default function AdminSettings() {
   const { toast } = useToast();
@@ -62,17 +54,9 @@ export default function AdminSettings() {
   const onSubmit = (data: Record<string, string>) => mutation.mutate(data);
 
   const smsEnabled = watch("sms_notifications_enabled") === "true";
+  const emailEnabled = watch("email_notifications_enabled") === "true";
 
-  const groups = [
-    {
-      title: "Notifications",
-      keys: ["admin_phone", "admin_email", "sms_notifications_enabled"],
-    },
-    {
-      title: "Rental Rules",
-      keys: ["max_rental_days", "max_sets"],
-    },
-  ];
+  const getSetting = (key: string) => settings?.find(s => s.key === key);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,58 +80,126 @@ export default function AdminSettings() {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {groups.map((group, gi) => (
-              <Card key={gi}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-800">{group.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  {group.keys.map((key, i) => {
-                    const setting = settings?.find(s => s.key === key);
-                    if (!setting) return null;
-                    const Icon = ICONS[key] || Settings;
-                    const isToggle = key === "sms_notifications_enabled";
 
-                    return (
-                      <div key={key}>
-                        {i > 0 && <Separator className="mb-5" />}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3 flex-1">
-                            <div className="p-1.5 bg-gray-100 rounded-md mt-0.5">
-                              <Icon className="h-4 w-4 text-gray-600" />
-                            </div>
-                            <div className="flex-1">
-                              <Label className="text-sm font-medium text-gray-900 block mb-1">
-                                {setting.label}
-                              </Label>
-                              <p className="text-xs text-gray-500 mb-3">{setting.description}</p>
-                              {!isToggle && (
-                                <Input
-                                  {...register(key)}
-                                  className="max-w-sm"
-                                  placeholder={setting.value}
-                                />
-                              )}
-                            </div>
-                          </div>
-                          {isToggle && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-gray-500">{smsEnabled ? "On" : "Off"}</span>
-                              <Switch
-                                checked={smsEnabled}
-                                onCheckedChange={(checked) =>
-                                  setValue("sms_notifications_enabled", checked ? "true" : "false")
-                                }
-                              />
-                            </div>
-                          )}
+            {/* Notifications Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-gray-800">Notifications</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+
+                {/* SMS — phone field + toggle on same row */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-gray-100 rounded-md">
+                        <Phone className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">
+                          {getSetting("admin_phone")?.label ?? "Admin Phone Number"}
+                        </Label>
+                        <p className="text-xs text-gray-500">
+                          {getSetting("admin_phone")?.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Bell className={`h-4 w-4 ${smsEnabled ? "text-green-600" : "text-gray-400"}`} />
+                      <span className="text-xs text-gray-500 w-6">{smsEnabled ? "On" : "Off"}</span>
+                      <Switch
+                        checked={smsEnabled}
+                        onCheckedChange={(checked) =>
+                          setValue("sms_notifications_enabled", checked ? "true" : "false")
+                        }
+                      />
+                    </div>
+                  </div>
+                  <Input
+                    {...register("admin_phone")}
+                    className="max-w-sm"
+                    placeholder="+1 (408) 000-0000"
+                    disabled={!smsEnabled}
+                  />
+                </div>
+
+                <Separator />
+
+                {/* Email — email field + toggle on same row */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-gray-100 rounded-md">
+                        <Mail className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">
+                          {getSetting("admin_email")?.label ?? "Admin Email Address"}
+                        </Label>
+                        <p className="text-xs text-gray-500">
+                          {getSetting("admin_email")?.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Mail className={`h-4 w-4 ${emailEnabled ? "text-green-600" : "text-gray-400"}`} />
+                      <span className="text-xs text-gray-500 w-6">{emailEnabled ? "On" : "Off"}</span>
+                      <Switch
+                        checked={emailEnabled}
+                        onCheckedChange={(checked) =>
+                          setValue("email_notifications_enabled", checked ? "true" : "false")
+                        }
+                      />
+                    </div>
+                  </div>
+                  <Input
+                    {...register("admin_email")}
+                    className="max-w-sm"
+                    placeholder="admin@mygreenloop.com"
+                    disabled={!emailEnabled}
+                  />
+                </div>
+
+              </CardContent>
+            </Card>
+
+            {/* Rental Rules Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-gray-800">Rental Rules</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {[
+                  { key: "max_rental_days", Icon: Calendar },
+                  { key: "max_sets", Icon: Package },
+                ].map(({ key, Icon }, i) => {
+                  const setting = getSetting(key);
+                  if (!setting) return null;
+                  return (
+                    <div key={key}>
+                      {i > 0 && <Separator className="mb-5" />}
+                      <div className="flex items-start gap-3">
+                        <div className="p-1.5 bg-gray-100 rounded-md mt-0.5">
+                          <Icon className="h-4 w-4 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                          <Label className="text-sm font-medium text-gray-900 block mb-1">
+                            {setting.label}
+                          </Label>
+                          <p className="text-xs text-gray-500 mb-3">{setting.description}</p>
+                          <Input
+                            {...register(key)}
+                            type="number"
+                            className="max-w-xs"
+                            placeholder={setting.value}
+                          />
                         </div>
                       </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            ))}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
 
             <div className="flex justify-end">
               <Button
