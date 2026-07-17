@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { differenceInDays, getDaysInMonth } from "date-fns";
+import { differenceInDays, getDaysInMonth, addDays } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -59,12 +59,42 @@ interface DateSelectorProps {
   value: DateFields;
   onChange: (fields: DateFields) => void;
   minDate?: Date;
+  maxDate?: Date;
 }
 
-function DateSelector({ label, value, onChange, minDate }: DateSelectorProps) {
-  const years = getYears();
+function DateSelector({ label, value, onChange, minDate, maxDate }: DateSelectorProps) {
+  const allYears = getYears();
+
+  const minYear = minDate ? minDate.getFullYear() : null;
+  const maxYear = maxDate ? maxDate.getFullYear() : null;
+  const minMonth = minDate ? minDate.getMonth() + 1 : null;
+  const maxMonth = maxDate ? maxDate.getMonth() + 1 : null;
+  const minDay = minDate ? minDate.getDate() : null;
+  const maxDay = maxDate ? maxDate.getDate() : null;
+
+  const selectedYear = value.year ? parseInt(value.year, 10) : null;
+  const selectedMonth = value.month ? parseInt(value.month, 10) : null;
+
+  const filteredYears = allYears.filter((y) => {
+    if (minYear !== null && y < minYear) return false;
+    if (maxYear !== null && y > maxYear) return false;
+    return true;
+  });
+
+  const filteredMonths = MONTHS.map((name, idx) => ({ name, num: idx + 1 })).filter(({ num }) => {
+    if (selectedYear !== null && minYear !== null && selectedYear === minYear && minMonth !== null && num < minMonth) return false;
+    if (selectedYear !== null && maxYear !== null && selectedYear === maxYear && maxMonth !== null && num > maxMonth) return false;
+    return true;
+  });
+
   const daysInMonth = getDaysForMonth(value.month, value.year);
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const filteredDays = Array.from({ length: daysInMonth }, (_, i) => i + 1).filter((d) => {
+    if (selectedYear !== null && selectedMonth !== null && minYear !== null && minMonth !== null && minDay !== null
+      && selectedYear === minYear && selectedMonth === minMonth && d < minDay) return false;
+    if (selectedYear !== null && selectedMonth !== null && maxYear !== null && maxMonth !== null && maxDay !== null
+      && selectedYear === maxYear && selectedMonth === maxMonth && d > maxDay) return false;
+    return true;
+  });
 
   return (
     <div>
@@ -73,8 +103,19 @@ function DateSelector({ label, value, onChange, minDate }: DateSelectorProps) {
         <Select
           value={value.month}
           onValueChange={(m) => {
-            const maxDay = getDaysInMonth(new Date(parseInt(value.year || String(new Date().getFullYear()), 10), parseInt(m, 10) - 1));
-            const day = value.day && parseInt(value.day, 10) > maxDay ? String(maxDay) : value.day;
+            const yearForCalc = parseInt(value.year || String(new Date().getFullYear()), 10);
+            const mon = parseInt(m, 10);
+            const maxDayInMonth = getDaysInMonth(new Date(yearForCalc, mon - 1));
+            let day = value.day && parseInt(value.day, 10) > maxDayInMonth ? String(maxDayInMonth) : value.day;
+            if (day) {
+              const dayNum = parseInt(day, 10);
+              if (minDate && yearForCalc === minDate.getFullYear() && mon === minDate.getMonth() + 1 && dayNum < minDate.getDate()) {
+                day = "";
+              }
+              if (maxDate && yearForCalc === maxDate.getFullYear() && mon === maxDate.getMonth() + 1 && dayNum > maxDate.getDate()) {
+                day = "";
+              }
+            }
             onChange({ ...value, month: m, day });
           }}
         >
@@ -82,8 +123,8 @@ function DateSelector({ label, value, onChange, minDate }: DateSelectorProps) {
             <SelectValue placeholder="Month" />
           </SelectTrigger>
           <SelectContent>
-            {MONTHS.map((name, idx) => (
-              <SelectItem key={name} value={String(idx + 1)}>
+            {filteredMonths.map(({ name, num }) => (
+              <SelectItem key={name} value={String(num)}>
                 {name}
               </SelectItem>
             ))}
@@ -98,7 +139,7 @@ function DateSelector({ label, value, onChange, minDate }: DateSelectorProps) {
             <SelectValue placeholder="Day" />
           </SelectTrigger>
           <SelectContent>
-            {days.map((d) => (
+            {filteredDays.map((d) => (
               <SelectItem key={d} value={String(d)}>
                 {d}
               </SelectItem>
@@ -108,13 +149,38 @@ function DateSelector({ label, value, onChange, minDate }: DateSelectorProps) {
 
         <Select
           value={value.year}
-          onValueChange={(y) => onChange({ ...value, year: y })}
+          onValueChange={(y) => {
+            const newYear = parseInt(y, 10);
+            let m = value.month;
+            let d = value.day;
+            if (m) {
+              const mon = parseInt(m, 10);
+              if (minDate && newYear === minDate.getFullYear() && mon < minDate.getMonth() + 1) {
+                m = "";
+                d = "";
+              } else if (maxDate && newYear === maxDate.getFullYear() && mon > maxDate.getMonth() + 1) {
+                m = "";
+                d = "";
+              } else if (d) {
+                const dayNum = parseInt(d, 10);
+                if (minDate && newYear === minDate.getFullYear() && mon === minDate.getMonth() + 1 && dayNum < minDate.getDate()) {
+                  d = "";
+                }
+                if (maxDate && newYear === maxDate.getFullYear() && mon === maxDate.getMonth() + 1 && dayNum > maxDate.getDate()) {
+                  d = "";
+                }
+                const daysInM = getDaysInMonth(new Date(newYear, mon - 1));
+                if (d && parseInt(d, 10) > daysInM) d = String(daysInM);
+              }
+            }
+            onChange({ month: m, day: d, year: y });
+          }}
         >
           <SelectTrigger className="w-[90px]">
             <SelectValue placeholder="Year" />
           </SelectTrigger>
           <SelectContent>
-            {years.map((y) => (
+            {filteredYears.map((y) => (
               <SelectItem key={y} value={String(y)}>
                 {y}
               </SelectItem>
@@ -138,6 +204,14 @@ export default function Catalog() {
   const [cart, setCart] = useState<Map<number, number>>(new Map());
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const start = fieldsToDate(startFields);
+    const end = fieldsToDate(endFields);
+    if (start && end && (end < start || differenceInDays(end, start) > 5)) {
+      setEndFields(EMPTY_DATE);
+    }
+  }, [startFields, endFields]);
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -310,12 +384,21 @@ export default function Catalog() {
                   <DateSelector
                     label="Start Date (Pick-up)"
                     value={startFields}
-                    onChange={setStartFields}
+                    onChange={(fields) => {
+                      setStartFields(fields);
+                      const newStart = fieldsToDate(fields);
+                      const currentEnd = fieldsToDate(endFields);
+                      if (newStart && currentEnd && currentEnd < newStart) {
+                        setEndFields(EMPTY_DATE);
+                      }
+                    }}
                   />
                   <DateSelector
                     label="End Date (Return)"
                     value={endFields}
                     onChange={setEndFields}
+                    minDate={fieldsToDate(startFields) ?? undefined}
+                    maxDate={fieldsToDate(startFields) ? addDays(fieldsToDate(startFields)!, 5) : undefined}
                   />
                 </div>
 
