@@ -99,7 +99,8 @@ export async function sendOrderNotification(
     endDate: string;
     items: Array<{ name: string; quantity: number }>;
     totalItems: number;
-  }
+  },
+  adminPhoneNumber?: string
 ) {
   const log = (message: string, isError = false) => {
     const prefix = `[Twilio][Order #${orderId}]`;
@@ -128,8 +129,7 @@ export async function sendOrderNotification(
   }
 
   const formattedFromNumber = formatSMSNumber(config.twilio.smsNumber);
-  // Use working verified number to bypass carrier blocking
-  const adminNumber = '+14088967726'; // Verified working number
+  const adminNumber = adminPhoneNumber || '+14088967726';
   const recipients = [
     { number: adminNumber, type: 'admin' as const },
     ...(customerPhone ? [{ number: customerPhone, type: 'customer' as const }] : [])

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAdminAuth } from "@/lib/admin-auth";
-import { Package, Bell, BarChart, MessageSquare, LogOut, FileText, Tags } from "lucide-react";
+import { Package, Bell, BarChart, MessageSquare, LogOut, FileText, Tags, Settings } from "lucide-react";
 
 export default function AdminNav() {
   const [location] = useLocation();
@@ -19,6 +19,7 @@ export default function AdminNav() {
     { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
     { href: "/admin/resources", label: "Resources", icon: FileText },
     { href: "/admin/categories", label: "Categories", icon: Tags },
+    { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
   return (

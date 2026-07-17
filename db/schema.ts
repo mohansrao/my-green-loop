@@ -211,6 +211,17 @@ export const contentBookmarksRelations = relations(contentBookmarks, ({ one }) =
   }),
 }));
 
+// App Settings (key-value store for admin-configurable values)
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  label: text("label").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+
 // Schema exports for validation
 export const insertProductSchema = createInsertSchema(products);
 export const selectProductSchema = createSelectSchema(products);

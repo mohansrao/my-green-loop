@@ -19,6 +19,7 @@ import AdminLogin from "@/pages/admin/login";
 import { ProtectedAdminRoute } from "@/lib/admin-auth";
 import Layout from "@/components/layout/layout";
 import AdminCategories from "@/pages/admin/AdminCategories";
+import AdminSettings from "@/pages/admin/settings";
 
 import AdminAddContent from "./pages/AdminAddContent";
 import AdminContentList from "./pages/AdminContentList";
@@ -75,6 +76,11 @@ function Router() {
       <Route path="/admin/categories">
         <ProtectedAdminRoute>
           <AdminCategories />
+        </ProtectedAdminRoute>
+      </Route>
+      <Route path="/admin/settings">
+        <ProtectedAdminRoute>
+          <AdminSettings />
         </ProtectedAdminRoute>
       </Route>
       <Route component={NotFound} />

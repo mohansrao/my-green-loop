@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { db } from "@db";
 import {
   products, rentals, rentalItems, inventoryDates, feedback,
-  contentItems, contentCategories, contentCategoryMapping, contentTags, contentTagMapping, contentBookmarks
+  contentItems, contentCategories, contentCategoryMapping, contentTags, contentTagMapping, contentBookmarks,
+  appSettings
 } from "@db/schema";
 // Note: inArray is used instead of exists for category filtering — see the
 // GET /api/content handler comments for the explanation of why exists() is
@@ -766,14 +767,22 @@ export function registerRoutes(app: Express): Server {
           totalItems: items.reduce((sum, item) => sum + item.quantity, 0)
         };
 
+        // Fetch admin phone from settings (falls back to hardcoded default inside twilio.ts)
+        const adminPhoneSetting = await db.select().from(appSettings).where(eq(appSettings.key, 'admin_phone')).limit(1);
+        const adminPhoneNumber = adminPhoneSetting[0]?.value;
+
+        const smsSetting = await db.select().from(appSettings).where(eq(appSettings.key, 'sms_notifications_enabled')).limit(1);
+        const smsEnabled = smsSetting[0]?.value !== 'false';
+
         // Send notifications after successful rental creation
-        const notificationResult = await sendOrderNotification(
+        const notificationResult = smsEnabled ? await sendOrderNotification(
           rental.id,
           rental.customerName,
           Number(rental.totalAmount),
           phoneNumber, // Pass customer phone number
-          orderDetails // Pass order details for message formatting
-        );
+          orderDetails, // Pass order details for message formatting
+          adminPhoneNumber
+        ) : { success: true, results: [], skipped: true };
 
         // Import and send email notifications as backup
         const { sendOrderEmailNotification } = await import('./services/email');
@@ -1029,6 +1038,50 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error fetching feedback analytics:', error);
       res.status(500).json({ message: "Error fetching analytics" });
+    }
+  });
+
+  // --- APP SETTINGS API ---
+
+  const DEFAULT_SETTINGS = [
+    { key: 'admin_phone', label: 'Admin Phone Number', description: 'SMS notifications for new orders are sent to this number.', value: '+14088967726' },
+    { key: 'sms_notifications_enabled', label: 'SMS Notifications', description: 'Enable or disable SMS notifications when an order is placed.', value: 'true' },
+    { key: 'max_rental_days', label: 'Max Rental Duration (days)', description: 'Maximum number of days a customer can rent items.', value: '5' },
+    { key: 'max_sets', label: 'Max Sets Per Order', description: 'Maximum number of sets a customer can order at once.', value: '100' },
+  ];
+
+  app.get("/api/admin/settings", async (_req, res) => {
+    try {
+      const rows = await db.select().from(appSettings);
+      // Merge stored values with defaults for any missing keys
+      const merged = DEFAULT_SETTINGS.map(def => {
+        const stored = rows.find(r => r.key === def.key);
+        return stored ? { ...def, value: stored.value, updatedAt: stored.updatedAt } : def;
+      });
+      res.json(merged);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      res.status(500).json({ message: "Error fetching settings" });
+    }
+  });
+
+  app.put("/api/admin/settings", async (req, res) => {
+    try {
+      const updates: { key: string; value: string }[] = req.body;
+      if (!Array.isArray(updates)) return res.status(400).json({ message: "Body must be an array of {key, value}" });
+
+      for (const { key, value } of updates) {
+        const def = DEFAULT_SETTINGS.find(d => d.key === key);
+        if (!def) continue;
+        await db.insert(appSettings)
+          .values({ key, value, label: def.label, description: def.description ?? '', updatedAt: new Date() })
+          .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt: new Date() } });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      res.status(500).json({ message: "Error saving settings" });
     }
   });
 
