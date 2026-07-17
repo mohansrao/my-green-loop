@@ -23,6 +23,7 @@ export default function AdminLogin() {
       // Store admin session
       localStorage.setItem("adminAuthenticated", "true");
       localStorage.setItem("adminLoginTime", Date.now().toString());
+      localStorage.setItem("adminKey", password);
       
       // Trigger custom event for same-tab updates
       window.dispatchEvent(new Event('admin-auth-change'));

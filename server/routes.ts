@@ -440,6 +440,37 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "nachbaliye";
+
+  function requireAdmin(req: any, res: any, next: any) {
+    const key = req.headers["x-admin-key"];
+    if (!key || key !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  }
+
+  app.patch("/api/orders/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid order id" });
+
+      const { status } = req.body;
+      const validStatuses = ["pending", "confirmed", "completed", "cancelled"];
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ error: "Invalid status. Must be one of: pending, confirmed, completed, cancelled" });
+      }
+
+      const updated = await db.update(rentals).set({ status }).where(eq(rentals.id, id)).returning();
+      if (updated.length === 0) return res.status(404).json({ error: "Order not found" });
+
+      res.json(updated[0]);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ error: "Failed to update order status" });
+    }
+  });
+
   app.get("/api/orders/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

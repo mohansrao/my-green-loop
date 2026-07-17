@@ -1,13 +1,29 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Package, Users, DollarSign, Clock, Search, Download, TrendingUp, Calendar, Eye } from "lucide-react";
+import { Package, DollarSign, Clock, Search, Download, TrendingUp, Calendar, Eye } from "lucide-react";
 import AdminNav from "@/components/admin/admin-nav";
 import { useState, useMemo } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+async function patchOrderStatus(id: number, status: string): Promise<Response> {
+  const adminKey = localStorage.getItem("adminKey") ?? "";
+  const res = await fetch(`/api/orders/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+    body: JSON.stringify({ status }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status}: ${text}`);
+  }
+  return res;
+}
 
 interface Order {
   id: number;
@@ -59,11 +75,50 @@ function exportOrdersCSV(orders: Order[]) {
   URL.revokeObjectURL(url);
 }
 
+function statusBadgeClass(status: string) {
+  if (status === "completed") return "bg-green-50 text-green-700 border-green-200";
+  if (status === "confirmed") return "bg-blue-50 text-blue-700 border-blue-200";
+  if (status === "pending") return "bg-yellow-50 text-yellow-700 border-yellow-200";
+  return "bg-red-50 text-red-700 border-red-200";
+}
+
+const STATUS_TRANSITIONS: Record<string, { label: string; next: string; color: string }[]> = {
+  pending: [
+    { label: "Confirm", next: "confirmed", color: "bg-blue-600 hover:bg-blue-700 text-white" },
+    { label: "Cancel", next: "cancelled", color: "bg-red-100 hover:bg-red-200 text-red-700" },
+  ],
+  confirmed: [
+    { label: "Complete", next: "completed", color: "bg-green-600 hover:bg-green-700 text-white" },
+    { label: "Cancel", next: "cancelled", color: "bg-red-100 hover:bg-red-200 text-red-700" },
+  ],
+  completed: [],
+  cancelled: [
+    { label: "Restore to Pending", next: "pending", color: "bg-yellow-100 hover:bg-yellow-200 text-yellow-800" },
+  ],
+};
+
 function OrderDetailModal({ orderId, onClose }: { orderId: number | null; onClose: () => void }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: order, isLoading } = useQuery<OrderDetail>({
     queryKey: [`/api/orders/${orderId}`],
     enabled: orderId !== null,
   });
+
+  const statusMutation = useMutation({
+    mutationFn: (newStatus: string) => patchOrderStatus(orderId!, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/recent"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${orderId}`] });
+      toast({ title: "Status updated", description: "Order status has been changed." });
+    },
+    onError: () => {
+      toast({ title: "Update failed", description: "Could not update order status.", variant: "destructive" });
+    },
+  });
+
+  const transitions = order ? (STATUS_TRANSITIONS[order.status] ?? []) : [];
 
   return (
     <Dialog open={orderId !== null} onOpenChange={open => !open && onClose()}>
@@ -97,12 +152,7 @@ function OrderDetailModal({ orderId, onClose }: { orderId: number | null; onClos
                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</p>
                 <Badge
                   variant="outline"
-                  className={
-                    order.status === "completed" ? "bg-green-50 text-green-700 border-green-200" :
-                    order.status === "confirmed" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                    order.status === "pending" ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
-                    "bg-red-50 text-red-700 border-red-200"
-                  }
+                  className={statusBadgeClass(order.status)}
                 >
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </Badge>
@@ -112,6 +162,25 @@ function OrderDetailModal({ orderId, onClose }: { orderId: number | null; onClos
                 <p className="font-semibold text-green-600 text-lg">${parseFloat(order.totalAmount).toFixed(2)}</p>
               </div>
             </div>
+
+            {transitions.length > 0 && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Change Status</p>
+                <div className="flex gap-2 flex-wrap">
+                  {transitions.map(t => (
+                    <Button
+                      key={t.next}
+                      size="sm"
+                      className={t.color}
+                      disabled={statusMutation.isPending}
+                      onClick={() => statusMutation.mutate(t.next)}
+                    >
+                      {t.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Rental Period</p>
@@ -190,9 +259,24 @@ export default function OrdersPage() {
   const [dateFilter, setDateFilter] = useState("all");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders/recent"],
     refetchInterval: 30000,
+  });
+
+  const quickStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      patchOrderStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/recent"] });
+      toast({ title: "Status updated", description: "Order status has been changed." });
+    },
+    onError: () => {
+      toast({ title: "Update failed", description: "Could not update order status.", variant: "destructive" });
+    },
   });
 
   const stats = useMemo(() => {
@@ -457,17 +541,22 @@ export default function OrdersPage() {
                           <div className="font-semibold text-green-600">${parseFloat(order.totalAmount).toFixed(2)}</div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
+                          <select
+                            value={order.status}
+                            disabled={quickStatusMutation.isPending}
+                            onChange={(e) => quickStatusMutation.mutate({ id: order.id, status: e.target.value })}
+                            className={`text-xs font-medium px-2 py-1 rounded border cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                               order.status === "completed" ? "bg-green-50 text-green-700 border-green-200" :
                               order.status === "confirmed" ? "bg-blue-50 text-blue-700 border-blue-200" :
                               order.status === "pending" ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
                               "bg-red-50 text-red-700 border-red-200"
-                            }
+                            }`}
                           >
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </Badge>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
