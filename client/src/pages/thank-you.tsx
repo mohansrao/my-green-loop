@@ -30,6 +30,8 @@ export default function ThankYou() {
       setRentalDetails(JSON.parse(details));
       sessionStorage.removeItem('rentalConfirmation');
     }
+    sessionStorage.removeItem('rentalDates');
+    sessionStorage.removeItem('cart');
   }, []);
 
   const getProductName = (productId: number) => {

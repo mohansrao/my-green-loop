@@ -125,7 +125,11 @@ export default function Checkout() {
       <div className="container mx-auto max-w-7xl px-4">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex justify-between items-center mb-6">
-            <Button variant="outline" onClick={() => navigate('/catalog')}>
+            <Button variant="outline" onClick={() => {
+              sessionStorage.removeItem('rentalDates');
+              sessionStorage.removeItem('cart');
+              navigate('/catalog');
+            }}>
               ← Back to Catalog
             </Button>
           </div>
