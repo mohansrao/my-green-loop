@@ -82,15 +82,20 @@ function DateSelector({ label, value, onChange, minDate, maxDate }: DateSelector
   });
 
   const filteredMonths = MONTHS.map((name, idx) => ({ name, num: idx + 1 })).filter(({ num }) => {
-    if (selectedYear !== null && minYear !== null && selectedYear === minYear && minMonth !== null && num < minMonth) return false;
+    // When no year is selected yet, treat it as minYear so past months are never shown
+    const inMinYearContext = selectedYear === null || (minYear !== null && selectedYear === minYear);
+    if (inMinYearContext && minYear !== null && minMonth !== null && num < minMonth) return false;
     if (selectedYear !== null && maxYear !== null && selectedYear === maxYear && maxMonth !== null && num > maxMonth) return false;
     return true;
   });
 
   const daysInMonth = getDaysForMonth(value.month, value.year);
   const filteredDays = Array.from({ length: daysInMonth }, (_, i) => i + 1).filter((d) => {
-    if (selectedYear !== null && selectedMonth !== null && minYear !== null && minMonth !== null && minDay !== null
-      && selectedYear === minYear && selectedMonth === minMonth && d < minDay) return false;
+    // Fall back to minYear/minMonth context when not explicitly selected, so past days are never shown
+    const effYear = selectedYear ?? minYear;
+    const effMonth = selectedMonth ?? minMonth;
+    if (effYear !== null && effMonth !== null && minYear !== null && minMonth !== null && minDay !== null
+      && effYear === minYear && effMonth === minMonth && d < minDay) return false;
     if (selectedYear !== null && selectedMonth !== null && maxYear !== null && maxMonth !== null && maxDay !== null
       && selectedYear === maxYear && selectedMonth === maxMonth && d > maxDay) return false;
     return true;
@@ -236,6 +241,8 @@ function loadSessionCart(): Map<number, number> {
 export default function Catalog() {
   const sessionDates = loadSessionDates();
   const hasRestoredDates = sessionDates.confirmedRange !== null;
+
+  const today = (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })();
 
   const [showInventoryCheck, setShowInventoryCheck] = useState(hasRestoredDates);
   const [startFields, setStartFields] = useState<DateFields>(sessionDates.startFields);
@@ -434,6 +441,7 @@ export default function Catalog() {
                         setEndFields(EMPTY_DATE);
                       }
                     }}
+                    minDate={today}
                   />
                   <DateSelector
                     label="End Date (Return)"
