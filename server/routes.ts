@@ -431,7 +431,6 @@ export function registerRoutes(app: Express): Server {
       res.setHeader('Expires', '0');
       const recentOrders = await db.query.rentals.findMany({
         orderBy: (rentals, { desc }) => [desc(rentals.createdAt)],
-        limit: 20,
       });
       res.json(recentOrders);
     } catch (error) {
