@@ -440,6 +440,44 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid order id" });
+
+      const rental = await db.query.rentals.findFirst({
+        where: (rentals, { eq }) => eq(rentals.id, id),
+      });
+      if (!rental) return res.status(404).json({ error: "Order not found" });
+
+      const items = await db.query.rentalItems.findMany({
+        where: (rentalItems, { eq }) => eq(rentalItems.rentalId, id),
+      });
+
+      const productIds = items.map(i => i.productId);
+      let productList: { id: number; name: string; category: string }[] = [];
+      if (productIds.length > 0) {
+        const { inArray } = await import("drizzle-orm");
+        productList = await db.query.products.findMany({
+          where: (products, { inArray: ia }) => ia(products.id, productIds),
+          columns: { id: true, name: true, category: true },
+        });
+      }
+
+      const productMap = Object.fromEntries(productList.map(p => [p.id, p]));
+      const enrichedItems = items.map(item => ({
+        ...item,
+        productName: productMap[item.productId]?.name ?? "Unknown",
+        productCategory: productMap[item.productId]?.category ?? "",
+      }));
+
+      res.json({ ...rental, items: enrichedItems });
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ error: "Failed to fetch order" });
+    }
+  });
+
   /**
    * Get available inventory for a specific date range
    * Calculates minimum available stock for each product within the range
