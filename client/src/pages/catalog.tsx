@@ -194,14 +194,56 @@ function DateSelector({ label, value, onChange, minDate, maxDate }: DateSelector
 
 const EMPTY_DATE: DateFields = { month: "", day: "", year: "" };
 
+function dateToFields(date: Date): DateFields {
+  return {
+    month: String(date.getMonth() + 1),
+    day: String(date.getDate()),
+    year: String(date.getFullYear()),
+  };
+}
+
+function loadSessionDates(): { startFields: DateFields; endFields: DateFields; confirmedRange: { from: Date; to: Date } | null } {
+  try {
+    const raw = sessionStorage.getItem("rentalDates");
+    if (!raw) return { startFields: EMPTY_DATE, endFields: EMPTY_DATE, confirmedRange: null };
+    const parsed = JSON.parse(raw);
+    const from = new Date(parsed.startDate);
+    const to = new Date(parsed.endDate);
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      return { startFields: EMPTY_DATE, endFields: EMPTY_DATE, confirmedRange: null };
+    }
+    return {
+      startFields: dateToFields(from),
+      endFields: dateToFields(to),
+      confirmedRange: { from, to },
+    };
+  } catch {
+    return { startFields: EMPTY_DATE, endFields: EMPTY_DATE, confirmedRange: null };
+  }
+}
+
+function loadSessionCart(): Map<number, number> {
+  try {
+    const raw = sessionStorage.getItem("cart");
+    if (!raw) return new Map();
+    const entries: [number, number][] = JSON.parse(raw);
+    return new Map(entries);
+  } catch {
+    return new Map();
+  }
+}
+
 export default function Catalog() {
-  const [showInventoryCheck, setShowInventoryCheck] = useState(false);
-  const [startFields, setStartFields] = useState<DateFields>(EMPTY_DATE);
-  const [endFields, setEndFields] = useState<DateFields>(EMPTY_DATE);
+  const sessionDates = loadSessionDates();
+  const hasRestoredDates = sessionDates.confirmedRange !== null;
+
+  const [showInventoryCheck, setShowInventoryCheck] = useState(hasRestoredDates);
+  const [startFields, setStartFields] = useState<DateFields>(sessionDates.startFields);
+  const [endFields, setEndFields] = useState<DateFields>(sessionDates.endFields);
   const [dateError, setDateError] = useState<string | null>(null);
-  const [confirmedRange, setConfirmedRange] = useState<{ from: Date; to: Date } | null>(null);
+  const [confirmedRange, setConfirmedRange] = useState<{ from: Date; to: Date } | null>(sessionDates.confirmedRange);
   const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
-  const [cart, setCart] = useState<Map<number, number>>(new Map());
+  const [cart, setCart] = useState<Map<number, number>>(loadSessionCart);
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
