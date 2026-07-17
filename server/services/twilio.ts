@@ -89,6 +89,60 @@ function getTwilioErrorHint(error: any): string {
  * }
  */
 
+/**
+ * Sends an SMS to a customer when their order status changes to confirmed or completed.
+ *
+ * @param {number} orderId - The order ID
+ * @param {string} customerName - The customer's name
+ * @param {string} customerPhone - The customer's phone number
+ * @param {'confirmed' | 'completed'} status - The new order status
+ */
+export async function sendStatusChangeSms(
+  orderId: number,
+  customerName: string,
+  customerPhone: string,
+  status: 'confirmed' | 'completed'
+) {
+  const log = (message: string, isError = false) => {
+    const prefix = `[Twilio][Order #${orderId}][StatusSMS]`;
+    isError ? console.error(`${prefix} ${message}`) : console.log(`${prefix} ${message}`);
+  };
+
+  if (!config.twilio.smsNumber) {
+    log("SMS number not configured", true);
+    return { success: false, error: "SMS number not configured" };
+  }
+
+  let formattedFrom: string;
+  let formattedTo: string;
+  try {
+    formattedFrom = formatSMSNumber(config.twilio.smsNumber);
+    formattedTo = formatSMSNumber(customerPhone);
+  } catch (error: any) {
+    log(`Invalid phone number: ${error.message}`, true);
+    return { success: false, error: error.message };
+  }
+
+  const messageBody = status === 'confirmed'
+    ? `Hi ${customerName}, your My Green Loop rental order #${orderId} has been confirmed! We look forward to serving you. Reply STOP to opt out.`
+    : `Hi ${customerName}, your My Green Loop rental order #${orderId} has been completed. Thank you for choosing eco-friendly dining! Reply STOP to opt out.`;
+
+  try {
+    log(`Sending ${status} SMS to ${customerPhone}`);
+    const message = await client.messages.create({
+      from: formattedFrom,
+      to: formattedTo,
+      body: messageBody,
+      messagingServiceSid: config.twilio.messagingServiceSid,
+    });
+    log(`Sent (SID: ${message.sid}, status: ${message.status})`);
+    return { success: true, sid: message.sid, status: message.status };
+  } catch (error: any) {
+    log(`Failed: ${error?.toString()}`, true);
+    return { success: false, error: error?.toString(), hint: getTwilioErrorHint(error) };
+  }
+}
+
 export async function sendOrderNotification(
   orderId: number,
   customerName: string,

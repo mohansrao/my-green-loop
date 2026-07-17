@@ -11,7 +11,7 @@ import {
 // incompatible with Drizzle's relational query API (db.query.*.findMany)
 import { eq, and, sql, or, desc, inArray, between } from "drizzle-orm";
 import { addDays, format } from "date-fns";
-import { sendOrderNotification } from './services/twilio';
+import { sendOrderNotification, sendStatusChangeSms } from './services/twilio';
 import twilioRoutes from './routes/twilio';
 import { fetchUrlMetadata, extractDomain } from './services/metadata-fetcher';
 import { getImpactStats } from './services/impact-analytics';
@@ -463,7 +463,19 @@ export function registerRoutes(app: Express): Server {
       const updated = await db.update(rentals).set({ status }).where(eq(rentals.id, id)).returning();
       if (updated.length === 0) return res.status(404).json({ error: "Order not found" });
 
-      res.json(updated[0]);
+      const order = updated[0];
+
+      // Send customer SMS for confirmed and completed status changes
+      if ((status === 'confirmed' || status === 'completed') && order.customerPhone) {
+        const smsSetting = await db.select().from(appSettings).where(eq(appSettings.key, 'sms_notifications_enabled')).limit(1);
+        const smsEnabled = smsSetting[0]?.value !== 'false';
+        if (smsEnabled) {
+          sendStatusChangeSms(order.id, order.customerName, order.customerPhone, status)
+            .catch(err => console.error(`[StatusSMS] Failed for order #${order.id}:`, err));
+        }
+      }
+
+      res.json(order);
     } catch (error) {
       console.error("Error updating order status:", error);
       res.status(500).json({ error: "Failed to update order status" });
@@ -826,6 +838,7 @@ export function registerRoutes(app: Express): Server {
         const [rental] = await db.insert(rentals).values({
           customerName,
           customerEmail,
+          customerPhone: phoneNumber || null,
           startDate: start,
           endDate: end,
           totalAmount,

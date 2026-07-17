@@ -28,6 +28,7 @@ export const rentals = pgTable("rentals", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
