@@ -363,102 +363,48 @@
         margin: 0;
       }
 
-      /* Force browser to print background colours and gradients exactly */
+      /* Force background colours and gradients to print exactly */
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         color-adjust: exact !important;
       }
 
+      /*
+       * Override the screen body which uses flexbox + align-items:center.
+       * Without this, the browser centers the flyer vertically and clips
+       * both the top and bottom when the content is taller than the page.
+       */
       html, body {
+        display: block !important;
         background: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
-        width: 8.5in;
-        height: 11in;
+        width: 8.5in !important;
+        height: auto !important;
       }
-      .draft-banner,
+
       .download-bar {
         display: none !important;
       }
+
+      /*
+       * Scale the flyer to fit on one letter page.
+       * zoom shrinks the element and its contents proportionally
+       * while still filling the full page width.
+       */
       .flyer {
-        width: 8.5in;
-        min-height: 11in;
+        zoom: 0.78;
+        width: calc(8.5in / 0.78) !important; /* renders as 8.5in after zoom */
+        min-height: auto !important;
+        height: auto !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         page-break-inside: avoid;
         break-inside: avoid;
-      }
-      .product-strip .item img {
-        transition: none !important;
-      }
-
-      /* Compress vertical spacing so everything fits on one letter page */
-      .header {
-        padding: 28px 44px 22px !important;
-      }
-      .headline {
-        font-size: 32px !important;
-        margin-bottom: 10px !important;
-      }
-      .logo-row {
-        margin-bottom: 18px !important;
-      }
-      .product-strip {
-        height: 155px !important;
-      }
-      .body {
-        padding: 24px 44px 16px !important;
-      }
-      .section-title {
-        margin-bottom: 10px !important;
-      }
-      .steps {
-        margin-bottom: 22px !important;
-      }
-      .step {
-        padding: 14px 10px !important;
-      }
-      .two-col {
-        gap: 16px !important;
-        margin-bottom: 22px !important;
-      }
-      .pricing-row {
-        margin-bottom: 16px !important;
-      }
-      .price-card {
-        padding: 16px 16px !important;
-      }
-      .price-card .amount {
-        font-size: 30px !important;
-      }
-      .price-note {
-        margin-top: -16px !important;
-        margin-bottom: 22px !important;
-      }
-      .impact-strip {
-        padding: 14px 20px !important;
-        margin-bottom: 20px !important;
-      }
-      .impact-stat .big {
-        font-size: 22px !important;
-      }
-      .occasions {
-        margin-bottom: 0 !important;
-        gap: 7px !important;
-      }
-      .occasion-tag {
-        padding: 5px 12px !important;
-        font-size: 12px !important;
-      }
-      .footer {
-        padding: 18px 44px !important;
-      }
-      .footer-cta .ready {
-        font-size: 15px !important;
-      }
-      .footer-contact .website {
-        font-size: 13px !important;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     }
 
