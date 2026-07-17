@@ -31,6 +31,13 @@ export default function Checkout() {
   const rentalDates = JSON.parse(sessionStorage.getItem('rentalDates') || '{}');
   const cartItems: [number, number][] = JSON.parse(sessionStorage.getItem('cart') || '[]');
 
+  // Redirect to catalog if no rental dates are present
+  useEffect(() => {
+    if (!rentalDates.startDate || !rentalDates.endDate) {
+      navigate('/catalog');
+    }
+  }, []);
+
   useEffect(() => {
     const calculatePrice = async () => {
       try {
@@ -109,6 +116,10 @@ export default function Checkout() {
     }
   };
 
+  if (!rentalDates.startDate || !rentalDates.endDate) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-green-50 py-12">
       <div className="container mx-auto max-w-7xl px-4">
@@ -165,6 +176,14 @@ export default function Checkout() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? "Submitting..." : "Complete Reservation"}
+                  </Button>
+
                   <FormField
                     control={form.control}
                     name="customerName"
@@ -226,8 +245,12 @@ export default function Checkout() {
                   </div>
 
 
-                  <Button type="submit" className="w-full">
-                    Complete Reservation
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? "Submitting..." : "Complete Reservation"}
                   </Button>
                 </form>
               </Form>
