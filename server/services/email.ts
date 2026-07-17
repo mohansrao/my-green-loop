@@ -5,13 +5,16 @@ import nodemailer from 'nodemailer';
  * Provides reliable backup when SMS delivery fails
  */
 
+// Supported: 'gmail', 'yahoo', 'hotmail', 'outlook'
+const EMAIL_SERVICE = (process.env.EMAIL_SERVICE || 'gmail').toLowerCase();
+
 const config = {
   isProduction: process.env.NODE_ENV === 'production',
   debugMode: process.env.DEBUG_EMAIL === 'true',
   email: {
-    service: 'gmail', // Can be changed to other services
+    service: EMAIL_SERVICE,
     adminEmail: process.env.ADMIN_EMAIL || 'admin@greenloop.com',
-    fromEmail: process.env.FROM_EMAIL || 'noreply@greenloop.com',
+    fromEmail: process.env.FROM_EMAIL,
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
   }
@@ -68,9 +71,11 @@ export async function sendOrderEmailNotification(
 
   const results = [];
 
+  const fromAddress = config.email.fromEmail || config.email.smtpUser;
+
   // Admin notification email
   const adminMailOptions = {
-    from: config.email.fromEmail,
+    from: fromAddress,
     to: config.email.adminEmail,
     subject: `New Order #${orderId} - Green Loop Rentals`,
     html: `
@@ -90,7 +95,7 @@ export async function sendOrderEmailNotification(
 
   // Customer confirmation email
   const customerMailOptions = {
-    from: config.email.fromEmail,
+    from: fromAddress,
     to: customerEmail,
     subject: `Order Confirmation #${orderId} - Green Loop Rentals`,
     html: `
