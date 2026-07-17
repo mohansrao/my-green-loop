@@ -652,6 +652,54 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  /**
+   * Get recent confirmed/completed rentals for the Community Impact section
+   * @route GET /api/rentals/recent-impact
+   * @returns {Object[]} 6 most recent confirmed or completed rentals with item counts
+   */
+  app.get("/api/rentals/recent-impact", async (_req, res) => {
+    try {
+      const recentRentals = await db
+        .select({
+          id: rentals.id,
+          customerName: rentals.customerName,
+          startDate: rentals.startDate,
+          endDate: rentals.endDate,
+          status: rentals.status,
+          totalQuantity: sql<number>`cast(sum(${rentalItems.quantity}) as int)`,
+        })
+        .from(rentals)
+        .innerJoin(rentalItems, eq(rentalItems.rentalId, rentals.id))
+        .where(or(eq(rentals.status, "confirmed"), eq(rentals.status, "completed")))
+        .groupBy(rentals.id)
+        .orderBy(desc(rentals.createdAt))
+        .limit(6);
+
+      const formatted = recentRentals.map((r) => {
+        const parts = (r.customerName ?? "").trim().split(/\s+/);
+        const firstName = parts[0]
+          ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase()
+          : "Anonymous";
+        const lastInitial =
+          parts.length > 1
+            ? parts[parts.length - 1].charAt(0).toUpperCase() + "."
+            : "";
+        return {
+          id: r.id,
+          displayName: lastInitial ? `${firstName} ${lastInitial}` : firstName,
+          startDate: r.startDate,
+          endDate: r.endDate,
+          totalQuantity: r.totalQuantity,
+        };
+      });
+
+      res.json(formatted);
+    } catch (error) {
+      console.error("Error fetching recent impact rentals:", error);
+      res.status(500).json({ message: "Error fetching community impact data" });
+    }
+  });
+
   app.get("/api/rentals", async (_req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

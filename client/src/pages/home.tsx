@@ -3,7 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import ContentCard from "@/components/ContentCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Leaf, Recycle, Calendar, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { format } from "date-fns";
+
+interface ImpactRental {
+  id: number;
+  displayName: string;
+  startDate: string;
+  endDate: string;
+  totalQuantity: number;
+}
 
 export default function Home() {
   const { data: contentData } = useQuery<any>({
@@ -11,9 +20,15 @@ export default function Home() {
   });
   const latestResources = contentData?.items || [];
 
+  const { data: impactRentals = [] } = useQuery<ImpactRental[]>({
+    queryKey: ['/api/rentals/recent-impact'],
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto max-w-7xl px-4 py-16">
+
+        {/* Hero — unchanged */}
         <header className="text-center mb-16">
           <h1 className="text-4xl font-bold text-green-800 mb-4">
             Eco-Friendly Dining Rentals
@@ -35,152 +50,47 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <Leaf className="w-12 h-12 text-green-600 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Eco-Friendly</h2>
+        {/* Why It Matters */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-green-800 text-center mb-6">Why It Matters</h2>
+          <p className="text-gray-700 text-center text-lg mb-10">
+            Every event is a chance to do something good. Single-use plastics and disposable tableware create
+            mountains of waste — most of it ending up in landfills within hours of use. My Green Loop exists to
+            prove that beautiful, well-set tables don't have to cost the planet anything.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">♻️</span>
+              </div>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">Less Waste</h3>
               <p className="text-gray-600">
-                We offer reusable plates, glasses and cutlery that help reduce single-use waste
+                Each set you borrow is one fewer stack of disposable plates and cups heading to the trash after your event.
               </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <Calendar className="w-12 h-12 text-green-600 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Flexible Rentals</h2>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🤝</span>
+              </div>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">A Shared Resource</h3>
               <p className="text-gray-600">
-                Choose your dates and duration with our easy booking system
+                Our tableware serves dozens of families each month. One shared set does the work of thousands of disposable ones.
               </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <Recycle className="w-12 h-12 text-green-600 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Zero Waste</h2>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🌱</span>
+              </div>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">A Lifestyle Choice</h3>
               <p className="text-gray-600">
-                Reuse tableware and enjoy your party guilt-free by generating zero waste
+                Choosing reusable tableware is a small shift that signals a bigger commitment — to your community and to the earth.
               </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="max-w-6xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-green-800 text-center mb-8">Perfect for Every Occasion</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70"
-                alt="Family gathering outdoors with eco-friendly tableware"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">Family Gatherings</h3>
-                  <p className="text-sm">Reunions, BBQs & Picnics</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3"
-                alt="Outdoor celebration setup"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">Celebrations</h3>
-                  <p className="text-sm">Birthdays, Anniversaries & More</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1519046904884-53103b34b206"
-                alt="Beach gathering with sustainable dining"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">Outdoor Events</h3>
-                  <p className="text-sm">Beach Days & Park Activities</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205"
-                alt="Cultural celebration setup"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">Cultural Events</h3>
-                  <p className="text-sm">Quinceañeras, Bar/Bat Mitzvahs</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622"
-                alt="School event celebration"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">School Events</h3>
-                  <p className="text-sm">Graduations & End-of-Year Parties</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3"
-                alt="Sports event gathering"
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-semibold">Sports Events</h3>
-                  <p className="text-sm">Team Celebrations & Gatherings</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Latest Resources Section */}
-        {latestResources.length > 0 && (
-          <div className="max-w-6xl mx-auto mb-24">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-green-800 mb-2">Latest Resources</h2>
-                <p className="text-gray-600">Discover tips and guides for sustainable living</p>
-              </div>
-              <Link href="/resources">
-                <Button variant="ghost" className="text-green-700 hover:bg-green-50 group">
-                  View All Resources
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {latestResources.map((item: any) => (
-                <ContentCard key={item.id} item={item} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="text-center mb-12">
+        {/* How It Works */}
+        <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-green-800 mb-8">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="flex flex-col items-center">
@@ -217,6 +127,86 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Stat Block — replaces occasions photo grid */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-8 border border-green-100">
+              <p className="text-4xl font-bold text-green-700 mb-2">10+</p>
+              <p className="text-lg font-semibold text-green-800 mb-1">Types of Events Served</p>
+              <p className="text-gray-600 text-sm">
+                From birthday parties and quinceañeras to school graduations and family reunions
+              </p>
+            </div>
+            <div className="bg-white/80 backdrop-blur rounded-xl p-8 border border-green-100">
+              <p className="text-4xl font-bold text-green-700 mb-2">100</p>
+              <p className="text-lg font-semibold text-green-800 mb-1">Tableware Sets Available</p>
+              <p className="text-gray-600 text-sm">
+                Each set includes a plate, glass, spoon, and fork — enough for up to 100 guests
+              </p>
+            </div>
+            <div className="bg-white/80 backdrop-blur rounded-xl p-8 border border-green-100">
+              <p className="text-4xl font-bold text-green-700 mb-2">Sunnyvale</p>
+              <p className="text-lg font-semibold text-green-800 mb-1">Service Area</p>
+              <p className="text-gray-600 text-sm">
+                Pick up at Wolfe &amp; Homestead. Serving the entire South Bay — no delivery required
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Community Impact */}
+        {impactRentals.length > 0 && (
+          <div className="max-w-6xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-green-800 text-center mb-2">Community Impact</h2>
+            <p className="text-center text-gray-600 mb-8">Real neighbors. Real events. Real difference.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {impactRentals.map((rental) => (
+                <Card key={rental.id} className="bg-white/80 backdrop-blur border border-green-100">
+                  <CardContent className="pt-6">
+                    <p className="text-lg font-semibold text-green-800 mb-1">{rental.displayName}</p>
+                    <p className="text-sm text-gray-500 mb-3">
+                      {format(new Date(rental.startDate), "MMM d")}
+                      {" – "}
+                      {format(new Date(rental.endDate), "MMM d, yyyy")}
+                    </p>
+                    <p className="text-gray-700 text-sm mb-2">
+                      <span className="font-medium">{rental.totalQuantity}</span> items rented
+                    </p>
+                    <p className="text-green-700 text-sm font-medium">
+                      🌿 Kept {rental.totalQuantity} sets out of the landfill
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Latest Resources Section */}
+        {latestResources.length > 0 && (
+          <div className="max-w-6xl mx-auto mb-24">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-green-800 mb-2">Latest Resources</h2>
+                <p className="text-gray-600">Discover tips and guides for sustainable living</p>
+              </div>
+              <Link href="/resources">
+                <Button variant="ghost" className="text-green-700 hover:bg-green-50 group">
+                  View All Resources
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {latestResources.map((item: any) => (
+                <ContentCard key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* FAQ */}
         <div className="text-center mb-12 mt-24">
           <h2 className="text-3xl font-bold text-green-800 mb-12">Frequently Asked Questions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 text-left max-w-5xl mx-auto">
@@ -262,6 +252,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
