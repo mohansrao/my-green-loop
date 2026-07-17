@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Phone, Bell, Calendar, Package, Save } from "lucide-react";
+import { Settings, Phone, Bell, Calendar, Package, Save, Mail } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface Setting {
@@ -21,6 +21,7 @@ interface Setting {
 
 const ICONS: Record<string, any> = {
   admin_phone: Phone,
+  admin_email: Mail,
   sms_notifications_enabled: Bell,
   max_rental_days: Calendar,
   max_sets: Package,
@@ -65,7 +66,7 @@ export default function AdminSettings() {
   const groups = [
     {
       title: "Notifications",
-      keys: ["admin_phone", "sms_notifications_enabled"],
+      keys: ["admin_phone", "admin_email", "sms_notifications_enabled"],
     },
     {
       title: "Rental Rules",

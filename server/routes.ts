@@ -784,13 +784,18 @@ export function registerRoutes(app: Express): Server {
           adminPhoneNumber
         ) : { success: true, results: [], skipped: true };
 
+        // Fetch admin email from settings (falls back to ADMIN_EMAIL env var inside email.ts)
+        const adminEmailSetting = await db.select().from(appSettings).where(eq(appSettings.key, 'admin_email')).limit(1);
+        const adminEmailAddress = adminEmailSetting[0]?.value;
+
         // Import and send email notifications as backup
         const { sendOrderEmailNotification } = await import('./services/email');
         const emailResult = await sendOrderEmailNotification(
           rental.id,
           rental.customerName,
           rental.customerEmail,
-          Number(rental.totalAmount)
+          Number(rental.totalAmount),
+          adminEmailAddress
         );
 
         if (!notificationResult.success) {
@@ -1045,6 +1050,7 @@ export function registerRoutes(app: Express): Server {
 
   const DEFAULT_SETTINGS = [
     { key: 'admin_phone', label: 'Admin Phone Number', description: 'SMS notifications for new orders are sent to this number.', value: '+14088967726' },
+    { key: 'admin_email', label: 'Admin Email Address', description: 'Email notifications for new orders are sent to this address.', value: 'admin@mygreenloop.com' },
     { key: 'sms_notifications_enabled', label: 'SMS Notifications', description: 'Enable or disable SMS notifications when an order is placed.', value: 'true' },
     { key: 'max_rental_days', label: 'Max Rental Duration (days)', description: 'Maximum number of days a customer can rent items.', value: '5' },
     { key: 'max_sets', label: 'Max Sets Per Order', description: 'Maximum number of sets a customer can order at once.', value: '100' },

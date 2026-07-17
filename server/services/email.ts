@@ -45,7 +45,8 @@ export async function sendOrderEmailNotification(
   orderId: number,
   customerName: string,
   customerEmail: string,
-  totalAmount: number
+  totalAmount: number,
+  adminEmail?: string
 ) {
   const log = (message: string, isError = false) => {
     const prefix = `[Email][Order #${orderId}]`;
@@ -72,11 +73,12 @@ export async function sendOrderEmailNotification(
   const results = [];
 
   const fromAddress = config.email.fromEmail || config.email.smtpUser;
+  const toAdminEmail = adminEmail || config.email.adminEmail;
 
   // Admin notification email
   const adminMailOptions = {
     from: fromAddress,
-    to: config.email.adminEmail,
+    to: toAdminEmail,
     subject: `New Order #${orderId} - Green Loop Rentals`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
