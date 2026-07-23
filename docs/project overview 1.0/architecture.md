@@ -37,7 +37,7 @@ The project follows a modern **Single Page Application (SPA)** architecture with
 ### Core Rental Tables
 - `products`: Catalog items with descriptions, image URLs, stock levels, and per-item CO₂/water savings.
 - `inventory_dates`: Tracks available stock for specific products on specific calendar days.
-- `rentals`: Customer order headers (name, email, dates, total amount, status, delivery option).
+- `rentals`: Customer order headers (name, email, phone, dates, total amount, status, delivery option). Includes `customerPhone` (nullable) for status-change SMS notifications.
 - `rental_items`: Junction table connecting rentals to products with quantities.
 - `feedback`: Customer reviews, ratings (1–5), photo URLs, and usage stats (plates/glasses/spoons used). Includes admin visibility control.
 
@@ -49,4 +49,4 @@ The project follows a modern **Single Page Application (SPA)** architecture with
 - `content_bookmarks`: User-saved content items (client-side localStorage for MVP; table reserved for future auth).
 
 ### Configuration Table
-- `app_settings`: Key-value store for admin-configurable application settings. Keys: `admin_phone`, `admin_email`, `sms_notifications_enabled`, `max_rental_days`, `max_sets`. Values are editable via the Admin Settings UI without code changes.
+- `app_settings`: Key-value store for admin-configurable application settings. Keys: `admin_phone`, `admin_email`, `sms_notifications_enabled`, `email_notifications_enabled`, `max_rental_days`, `max_sets`. Values are editable via the Admin Settings UI without code changes.

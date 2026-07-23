@@ -4,14 +4,16 @@
 
 ### Twilio (SMS)
 - **Service**: SMS via A2P 10DLC-compliant messaging.
-- **Purpose**: Order notifications sent to both admin and customer when a new rental is placed.
+- **Purpose**:
+  1. Order placement — notifications sent to both admin and customer when a new rental is created.
+  2. Status changes — customer is notified when their order status changes to `confirmed` or `completed` (fire-and-forget, non-blocking). Requires `customerPhone` to be set on the rental record; orders placed before this feature was added have a `NULL` phone and will not receive status SMS.
 - **Admin number**: Stored in `app_settings` table (key: `admin_phone`), editable via Admin Settings UI. Falls back to hardcoded default if not set in DB.
 - **Environment Variables**:
   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
   - `TWILIO_SMS_NUMBER` — the "from" number
   - `TWILIO_MESSAGING_SERVICE_SID` — for A2P 10DLC delivery
   - `DEBUG_TWILIO=true` — enables verbose logging + 30s delivery status check
-- **SMS can be toggled off** via Admin Settings without touching code.
+- **SMS can be toggled off** via Admin Settings (`sms_notifications_enabled`) without touching code.
 
 ### Nodemailer (Email)
 - **Purpose**: Order confirmation emails sent to both admin and customer on every new rental.
@@ -50,7 +52,7 @@
 - `GET /api/rentals` — List all rental orders (Admin).
 - `GET /api/orders/recent` — All orders, most-recent first, with full detail (Admin). No row limit.
 - `POST /api/rentals` — Create a new rental order (handles inventory locking, SMS, and email notifications).
-- `PATCH /api/orders/:id/status` — Update order status. Requires `x-admin-key` header matching `ADMIN_PASSWORD`. Allowed values: `pending`, `confirmed`, `completed`, `cancelled`.
+- `PATCH /api/orders/:id/status` — Update order status. Requires `x-admin-key` header matching `ADMIN_PASSWORD`. Allowed values: `pending`, `confirmed`, `completed`, `cancelled`. Automatically sends a status-change SMS to the customer when status changes to `confirmed` or `completed` (if `customerPhone` is set and SMS is enabled).
 - `POST /api/calculate-price` — Dynamic pricing based on item quantities.
 - `GET /api/rentals/recent-impact` — Returns 6 most-recent confirmed/completed rentals for the Community Impact section on the home page (anonymised names).
 

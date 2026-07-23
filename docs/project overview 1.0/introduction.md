@@ -27,7 +27,7 @@ The primary goal of the project is to make sustainable choices easier for event 
 - **Notifications**: Order alert management.
 - **Feedback Management**: Approve/hide customer feedback for public display.
 - **Resources/Categories**: Manage Content Hub items and taxonomy.
-- **Settings**: UI-driven configuration for admin phone, admin email, SMS toggle, max rental days, and max sets — no code or environment variable changes needed.
+- **Settings**: UI-driven configuration for admin phone, admin email, SMS toggle, email toggle, max rental days, and max sets — no code or environment variable changes needed.
 
 ## Pricing
 - **$15** flat fee for up to 50 sets (plate + glass + fork + spoon).
